@@ -1,12 +1,13 @@
 (()=>{'use strict';
 const KEY='premiumTicketTracker.v1';
-const statuses=['Open','Pending','On Hold','Solved','Merged'];
+const statuses=['Open','Pending','On Hold','Solved','Closed','Merged'];
 const colors={Open:'#39a7e8',Pending:'#f7b916','On Hold':'#ef4c4c',Solved:'#16b86c',Closed:'#728296',Merged:'#7c3aed'};
 const pad=n=>String(n).padStart(2,'0');
 const fmt=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 const parse=v=>{const m=String(v||'').match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})$/);return m?new Date(+m[1],+m[2]-1,+m[3],+m[4],+m[5],+m[6]):null};
 function life(t,status){const now=fmt(new Date());let solvedTime=t.solvedTime||'',expectedClose=t.expectedClose||'',closedTime=t.closedTime||'',closeReason=t.closeReason||'';
  if(status==='Solved'&&t.status!=='Solved'){solvedTime=now;const d=parse(now);expectedClose=fmt(new Date(d.getTime()+86400000));closedTime='';closeReason=''}
+ if(status==='Closed'&&t.status!=='Closed'){closedTime=now;expectedClose='';closeReason='Manually Closed'}
  if(status==='Merged'){closedTime=now;expectedClose='';closeReason='Merged'}
  if(!['Solved','Merged','Closed'].includes(status)&&t.status!=='Closed'){solvedTime='';expectedClose='';closedTime='';closeReason=''}
  return{solvedTime,expectedClose,closedTime,closeReason};}
@@ -16,7 +17,7 @@ function closeMenus(except){document.querySelectorAll('.status-popover.open').fo
 function enhance(){document.querySelectorAll('#ticketTableBody tr').forEach(row=>{const cell=row.children[4];if(!cell||cell.querySelector('.click-status'))return;const number=row.children[1]?.textContent.trim(),t=read().find(x=>String(x.number).trim()===number);if(!t)return;
  const wrap=document.createElement('div');wrap.className='click-status';
  const btn=document.createElement('button');btn.type='button';btn.className='status-pill status-click-btn';btn.style.background=colors[t.status]||'#728296';btn.innerHTML=`<span>${t.status}</span><i>⌄</i>`;btn.setAttribute('aria-label',`Change status for ticket ${number}`);
- const menu=document.createElement('div');menu.className='status-popover';const opts=t.status==='Closed'?['Closed',...statuses]:statuses;menu.innerHTML=opts.map(s=>`<button type="button" data-status="${s}" class="status-option${s===t.status?' active':''}"><b style="background:${colors[s]||'#728296'}"></b><span>${s}</span>${s===t.status?'<i>✓</i>':''}</button>`).join('');
+ const menu=document.createElement('div');menu.className='status-popover';menu.innerHTML=statuses.map(s=>`<button type="button" data-status="${s}" class="status-option${s===t.status?' active':''}"><b style="background:${colors[s]||'#728296'}"></b><span>${s}</span>${s===t.status?'<i>✓</i>':''}</button>`).join('');
  btn.addEventListener('click',e=>{e.stopPropagation();const opening=!menu.classList.contains('open');closeMenus(menu);menu.classList.toggle('open',opening)});
  menu.addEventListener('click',e=>{const option=e.target.closest('[data-status]');if(!option)return;e.stopPropagation();saveStatus(number,option.dataset.status)});
  wrap.append(btn,menu);cell.innerHTML='';cell.appendChild(wrap);
