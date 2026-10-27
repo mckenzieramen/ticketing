@@ -22,6 +22,11 @@ button{cursor:pointer}
 .panel-body{padding:16px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}label{font-size:12px;font-weight:700;color:#1b3048}label b{color:#e43b3b}
 input,select{width:100%;border:1px solid #cbd9e6;border-radius:6px;padding:11px 12px;background:#fff;color:#172a40;outline:none;transition:.2s}
 input:focus,select:focus{border-color:#4b9df7;box-shadow:0 0 0 3px rgba(11,121,247,.1)}
+/* Make Add / Update Ticket status selector easy to hit and obvious */
+#ticketStatus{min-height:46px;padding:12px 44px 12px 14px;font-size:13px;font-weight:700;cursor:pointer;border-color:#aebfd0;background-color:#fff}
+#ticketStatus:hover{border-color:#4b9df7;background-color:#f8fbff}
+#ticketStatus:focus{border-color:#0b79f7;box-shadow:0 0 0 4px rgba(11,121,247,.13)}
+#ticketForm label:has(#ticketStatus){cursor:pointer}
 .primary{border:0;background:linear-gradient(90deg,#087af6,#076be0);color:white;border-radius:6px;padding:12px;font-weight:800}.wide{grid-column:1/-1;margin-top:4px}
 .stamp-btn{width:50%;min-width:250px;display:block;margin:0 auto;border:0;border-radius:6px;padding:13px;color:#fff;background:linear-gradient(90deg,#6734e9,#8731f0);font-weight:800;font-size:16px;box-shadow:0 7px 16px rgba(113,55,237,.2)}
 .helper{font-size:11px;color:var(--muted);margin:7px 0 12px}.centered{text-align:center}.stamp-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.span2{grid-column:1/-1}.copy-wrap{position:relative}.copy-wrap input{padding-right:40px}.copy-btn{position:absolute;right:4px;top:4px;height:34px;width:34px;border:0;background:#edf4fb;border-radius:5px;color:#16446e}
