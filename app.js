@@ -133,15 +133,11 @@ function renderStats(){
     ["Solved",tickets.filter(t=>t.status==="Solved").length,"✓","#10ad65"],
     ["Closed",tickets.filter(t=>t.status==="Closed").length,"▣","#718092"]
   ];
-  $("statsGrid").innerHTML=defs.map((x,i)=>`<div class="stat" style="animation-delay:${i*30}ms"><div class="stat-icon" style="background:${x[3]}">${x[2]}</div><div><small>${x[0]}</small><strong>${x[1]}</strong></div></div>`).join("");
+  $("statsGrid").innerHTML=defs.map(x=>`<div class="stat"><div class="stat-icon" style="background:${x[3]}">${x[2]}</div><div><small>${x[0]}</small><strong>${x[1]}</strong></div></div>`).join("");
 }
 function filteredTickets(){
-  const globalQ=($("globalSearch")?.value||"").trim().toLowerCase();
   const q=$("searchInput").value.trim().toLowerCase(), type=$("typeFilter").value,status=$("statusFilter").value;
-  return tickets.filter(t=>{
-    const searchable=`${t.number} ${t.callType} ${t.status} ${t.creation}`.toLowerCase();
-    return (!globalQ||searchable.includes(globalQ))&&(!q||t.number.toLowerCase().includes(q))&&(!type||t.callType===type)&&(!status||t.status===status)
-  });
+  return tickets.filter(t=>(!q||t.number.toLowerCase().includes(q))&&(!type||t.callType===type)&&(!status||t.status===status));
 }
 function renderTable(){
   const rows=filteredTickets();
@@ -157,7 +153,7 @@ function renderTable(){
       <td>${t.creation}</td><td><span class="status-pill" style="background:${statusColor(t.status)};color:#fff">${escapeHtml(t.status)}</span></td>
       <td>${t.solvedTime||"—"}</td><td>${t.expectedClose||"—"}</td><td>${t.closedTime||"—"}</td><td>${dur}</td>
       <td><span class="pickup-pill" style="background:${pickupBg}">${pickup}</span></td>
-      <td><button class="action-btn edit" title="Edit ticket" onclick="editTicket('${t.id}')">✎</button><button class="action-btn view" title="View details" onclick="viewTicket('${t.id}')">◉</button><button class="action-btn delete" title="Delete ticket" onclick="deleteTicket('${t.id}')">×</button></td>
+      <td><button class="action-btn edit" onclick="editTicket('${t.id}')">✎</button><button class="action-btn view" onclick="viewTicket('${t.id}')">◉</button><button class="action-btn delete" onclick="deleteTicket('${t.id}')">×</button></td>
     </tr>`;
   }).join("");
 }
@@ -182,9 +178,9 @@ function renderAnalytics(){
 window.editTicket=id=>{
   const t=tickets.find(x=>x.id===id);if(!t)return;
   editingId=id;$("ticketNumber").value=t.number;$("callType").value=t.callType;$("ticketCreation").value=t.creation;$("ticketStatus").value=t.status;
-  $("ticketSubmitText").textContent="Update Ticket";document.querySelector('.add-ticket-panel')?.scrollIntoView({behavior:"smooth",block:"start"});showDetails(t);
+  $("ticketSubmitText").textContent="Update Ticket";window.scrollTo({top:0,behavior:"smooth"});showDetails(t);
 };
-window.viewTicket=id=>{const t=tickets.find(x=>x.id===id);if(t){showDetails(t);document.querySelector('.details-panel-wrap')?.scrollIntoView({behavior:"smooth",block:"center"})}};
+window.viewTicket=id=>{const t=tickets.find(x=>x.id===id);if(t)showDetails(t)};
 window.deleteTicket=id=>{if(confirm("Delete this ticket record?")){tickets=tickets.filter(x=>x.id!==id);save();toast("Ticket deleted.");}};
 function showDetails(t){
   const creation=parseDate(t.creation),closed=parseDate(t.closedTime),expected=parseDate(t.expectedClose);
@@ -195,19 +191,10 @@ function showDetails(t){
   const statusEl=$("detailsPanel").querySelectorAll("strong")[4];statusEl.style.color=statusColor(t.status);
 }
 ["searchInput","typeFilter","statusFilter"].forEach(id=>$(id).addEventListener(id==="searchInput"?"input":"change",renderTable));
-$("globalSearch")?.addEventListener("input",renderTable);
-$("scrollToAdd")?.addEventListener("click",()=>document.querySelector('.add-ticket-panel')?.scrollIntoView({behavior:"smooth",block:"start"}));
-
-document.querySelectorAll('.nav-item').forEach((button,index)=>button.addEventListener('click',()=>{
-  document.querySelectorAll('.nav-item').forEach(x=>x.classList.toggle('active',x===button));
-  const targets=['.page-heading','.records-panel','.stamp-panel','.analytics-grid','.page-heading'];
-  document.querySelector(targets[index])?.scrollIntoView({behavior:'smooth',block:'start'});
-}));
-
 $("exportBtn").addEventListener("click",()=>{
   const head=["Ticket Number","Call Type","Ticket Creation","Status","Solved Time","Expected Close Time","Actual Closed Time","Pickup Seconds","Stamped Time","Answer Time"];
-  const rows=filteredTickets().map(t=>[t.number,t.callType,t.creation,t.status,t.solvedTime,t.expectedClose,t.closedTime,t.pickupSeconds??"",t.stampedTime,t.answerTime]);
+  const rows=tickets.map(t=>[t.number,t.callType,t.creation,t.status,t.solvedTime,t.expectedClose,t.closedTime,t.pickupSeconds??"",t.stampedTime,t.answerTime]);
   const csv=[head,...rows].map(r=>r.map(v=>`"${String(v??"").replaceAll('"','""')}"`).join(",")).join("\n");
-  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download=`ticket-records-${fmtDate(new Date()).slice(0,10)}.csv`;a.click();URL.revokeObjectURL(a.href);toast("CSV export created.");
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download=`ticket-records-${fmtDate(new Date()).slice(0,10)}.csv`;a.click();URL.revokeObjectURL(a.href);
 });
 render();
