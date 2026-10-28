@@ -2,118 +2,21 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebas
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js';
 import { getFirestore, doc, setDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js';
 
-const firebaseConfig = {
-  apiKey: 'AIzaSyBYxjcIbOpjx-gaVnbrkI6n22-FahZL3AM',
-  authDomain: 'ticket-tracking-system-6b6d5.firebaseapp.com',
-  projectId: 'ticket-tracking-system-6b6d5',
-  storageBucket: 'ticket-tracking-system-6b6d5.firebasestorage.app',
-  messagingSenderId: '803970589691',
-  appId: '1:803970589691:web:8d4a7ea0bafd1d301c615e'
-};
+const firebaseConfig={apiKey:'AIzaSyBYxjcIbOpjx-gaVnbrkI6n22-FahZL3AM',authDomain:'ticket-tracking-system-6b6d5.firebaseapp.com',projectId:'ticket-tracking-system-6b6d5',storageBucket:'ticket-tracking-system-6b6d5.firebasestorage.app',messagingSenderId:'803970589691',appId:'1:803970589691:web:8d4a7ea0bafd1d301c615e'};
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
+await setPersistence(auth,browserLocalPersistence);
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-await setPersistence(auth, browserLocalPersistence);
+const style=document.createElement('style');style.textContent=`.tts-login{position:fixed;inset:0;z-index:999999;background:#164b79;display:flex;align-items:center;justify-content:center;padding:24px;font-family:Inter,sans-serif}.tts-login.hidden{display:none}.tts-card{width:min(420px,100%);background:#fff;border-radius:18px;padding:34px;box-shadow:0 24px 70px #0004}.tts-brand{display:flex;gap:11px;align-items:center;margin-bottom:25px}.tts-logo{width:40px;height:40px;border-radius:11px;background:#1477e8;color:white;display:grid;place-items:center;font-weight:800;font-size:20px}.tts-brand strong{display:block;color:#123b62;font-size:17px}.tts-brand small{color:#718096}.tts-card h2{margin:0 0 5px;color:#172b4d}.tts-sub{margin:0 0 20px;color:#718096;font-size:12px}.tts-field{display:block;margin:13px 0;font-size:12px;font-weight:700;color:#40546b}.tts-field input{width:100%;box-sizing:border-box;margin-top:7px;padding:12px;border:1px solid #d5dee9;border-radius:8px;outline:none}.tts-field input:focus{border-color:#1477e8;box-shadow:0 0 0 3px #1477e819}.tts-submit{width:100%;padding:12px;border:0;border-radius:8px;background:#1477e8;color:white;font-weight:800;cursor:pointer}.tts-error{display:none;background:#fff1f2;color:#be123c;padding:9px;border-radius:8px;font-size:12px;margin-top:10px}.tts-note{text-align:center;color:#8996a8;font-size:10px;margin:14px 0 0}.tts-logout{border:1px solid #ffffff55;background:#ffffff16;color:white;border-radius:8px;padding:7px 10px;font-weight:700;cursor:pointer;margin-left:8px}.tts-sync{font-size:10px;color:#d9ecff;margin-left:7px;white-space:nowrap}@media(max-width:800px){.tts-sync{display:none}}`;document.head.appendChild(style);
 
-const TRACKED_KEYS = [
-  'premiumTicketTracker.v1',
-  'premiumTicketTracker.attendance.v1',
-  'premiumTicketTracker.monthlyArchives.v1',
-  'premiumTicketTracker.activeMonth.v1'
-];
+document.body.insertAdjacentHTML('afterbegin',`<div id="ttsLogin" class="tts-login"><div class="tts-card"><div class="tts-brand"><div class="tts-logo">T</div><div><strong>Ticket Tracking System</strong><small>Record · Monitor · Track · Analyze</small></div></div><h2>Welcome back</h2><p class="tts-sub">Sign in to access your dashboard and keep your ticket records backed up to your account.</p><form id="ttsLoginForm"><label class="tts-field">Email<input id="ttsEmail" type="email" autocomplete="username" required placeholder="Enter your email"></label><label class="tts-field">Password<input id="ttsPassword" type="password" autocomplete="current-password" required placeholder="Enter your password"></label><button class="tts-submit" type="submit">Sign In</button><div id="ttsError" class="tts-error"></div></form><p class="tts-note">Your current browser records are preserved during sign-in.</p></div></div>`);
 
-const gate = document.getElementById('loginGate');
-const form = document.getElementById('loginForm');
-const emailInput = document.getElementById('loginEmail');
-const passwordInput = document.getElementById('loginPassword');
-const errorBox = document.getElementById('loginError');
-const logoutBtn = document.getElementById('logoutBtn');
-const profileName = document.getElementById('profileName');
-
-function showError(message) {
-  errorBox.textContent = message;
-  errorBox.style.display = 'block';
-}
-
-function safeId(key) {
-  return key.replace(/[^a-zA-Z0-9_-]/g, '_');
-}
-
-async function backupLocalData(user) {
-  const writes = [];
-  for (const key of TRACKED_KEYS) {
-    const raw = localStorage.getItem(key);
-    if (raw === null) continue;
-    writes.push(setDoc(doc(db, 'users', user.uid, 'localBackup', safeId(key)), {
-      key,
-      raw,
-      ownerEmail: user.email || null,
-      updatedAt: serverTimestamp()
-    }, { merge: true }));
-  }
-  await Promise.all(writes);
-  await setDoc(doc(db, 'users', user.uid), {
-    email: user.email || null,
-    lastSyncAt: serverTimestamp(),
-    migrationVersion: 1
-  }, { merge: true });
-}
-
-let syncTimer = null;
-function scheduleBackup() {
-  clearTimeout(syncTimer);
-  syncTimer = setTimeout(() => {
-    if (auth.currentUser) backupLocalData(auth.currentUser).catch(console.error);
-  }, 700);
-}
-
-const originalSetItem = Storage.prototype.setItem;
-Storage.prototype.setItem = function(key, value) {
-  originalSetItem.call(this, key, value);
-  if (this === localStorage && TRACKED_KEYS.includes(String(key))) scheduleBackup();
-};
-
-form?.addEventListener('submit', async (event) => {
-  event.preventDefault();
-  errorBox.style.display = 'none';
-  const submit = form.querySelector('button[type="submit"]');
-  submit.disabled = true;
-  submit.textContent = 'Signing in...';
-  try {
-    await signInWithEmailAndPassword(auth, emailInput.value.trim(), passwordInput.value);
-    passwordInput.value = '';
-  } catch (error) {
-    showError('Unable to sign in. Please check your email and password.');
-  } finally {
-    submit.disabled = false;
-    submit.textContent = 'Sign In';
-  }
-});
-
-logoutBtn?.addEventListener('click', async () => {
-  try {
-    if (auth.currentUser) await backupLocalData(auth.currentUser);
-  } catch (error) {
-    console.error(error);
-  }
-  await signOut(auth);
-});
-
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    gate?.classList.remove('hidden');
-    document.body.classList.add('auth-locked');
-    return;
-  }
-
-  try {
-    await backupLocalData(user);
-  } catch (error) {
-    console.error('Cloud backup failed:', error);
-  }
-
-  if (profileName) profileName.textContent = user.email || 'User';
-  gate?.classList.add('hidden');
-  document.body.classList.remove('auth-locked');
-});
+const headerRight=document.querySelector('.header-right');if(headerRight){const wrap=document.createElement('div');wrap.style.display='flex';wrap.style.alignItems='center';wrap.innerHTML='<span id="ttsSync" class="tts-sync"></span><button id="ttsLogout" class="tts-logout" type="button" hidden>Log Out</button>';headerRight.appendChild(wrap)}
+const gate=document.getElementById('ttsLogin'),form=document.getElementById('ttsLoginForm'),email=document.getElementById('ttsEmail'),password=document.getElementById('ttsPassword'),errorBox=document.getElementById('ttsError'),logout=document.getElementById('ttsLogout'),sync=document.getElementById('ttsSync');
+const KEYS=['premiumTicketTracker.v1','premiumTicketTracker.attendance.v1','premiumTicketTracker.monthlyArchives.v1','premiumTicketTracker.activeMonth.v1'];
+const safeId=k=>k.replace(/[^a-zA-Z0-9_-]/g,'_');
+function error(msg){errorBox.textContent=msg;errorBox.style.display='block'}
+async function backup(user){if(sync)sync.textContent='Saving…';const writes=[];for(const key of KEYS){const raw=localStorage.getItem(key);if(raw!==null)writes.push(setDoc(doc(db,'users',user.uid,'localBackup',safeId(key)),{key,raw,ownerEmail:user.email||null,updatedAt:serverTimestamp()},{merge:true}))}await Promise.all(writes);await setDoc(doc(db,'users',user.uid),{email:user.email||null,lastSyncAt:serverTimestamp(),migrationVersion:1},{merge:true});if(sync)sync.textContent='Cloud saved ✓'}
+let timer;const original=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){original.call(this,k,v);if(this===localStorage&&KEYS.includes(String(k))&&auth.currentUser){clearTimeout(timer);timer=setTimeout(()=>backup(auth.currentUser).catch(e=>{console.error(e);if(sync)sync.textContent='Local saved · cloud retry needed'}),700)}};
+form.addEventListener('submit',async e=>{e.preventDefault();errorBox.style.display='none';const btn=form.querySelector('button');btn.disabled=true;btn.textContent='Signing in…';try{await signInWithEmailAndPassword(auth,email.value.trim(),password.value);password.value=''}catch(e){error('Unable to sign in. Check the email/password in Firebase Authentication.')}finally{btn.disabled=false;btn.textContent='Sign In'}});
+logout?.addEventListener('click',async()=>{try{if(auth.currentUser)await backup(auth.currentUser)}catch(e){console.error(e)}await signOut(auth)});
+onAuthStateChanged(auth,async user=>{if(!user){gate.classList.remove('hidden');if(logout)logout.hidden=true;if(sync)sync.textContent='';return}gate.classList.add('hidden');if(logout)logout.hidden=false;const profile=document.querySelector('.profile strong');if(profile)profile.textContent=user.email||'User';try{await backup(user)}catch(e){console.error('Firestore backup failed',e);if(sync)sync.textContent='Local data safe · cloud permission needed'}});
