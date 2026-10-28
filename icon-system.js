@@ -13,4 +13,5 @@ function apply(){
  document.querySelectorAll('.action-btn.edit').forEach(e=>{e.innerHTML=svg('edit');e.title='Edit ticket';e.setAttribute('aria-label','Edit ticket')});document.querySelectorAll('.action-btn.view').forEach(e=>{e.innerHTML=svg('eye');e.title='View ticket';e.setAttribute('aria-label','View ticket')});document.querySelectorAll('.action-btn.delete').forEach(e=>{e.innerHTML=svg('trash');e.title='Delete ticket';e.setAttribute('aria-label','Delete ticket')});
 }
 const obs=new MutationObserver(()=>requestAnimationFrame(apply));obs.observe(document.body,{subtree:true,childList:true});apply();
+import('./firebase-auth-sync.js?v=20261028-2').catch(console.error);
 })();
