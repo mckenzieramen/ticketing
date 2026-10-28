@@ -5,7 +5,7 @@ input.readOnly=false;
 input.placeholder='YYYY-MM-DD HH:mm:ss';
 input.setAttribute('autocomplete','off');
 input.setAttribute('inputmode','numeric');
-input.setAttribute('aria-label','Stamped Time in PH Time. Press STAMP TIME for immediate capture or enter manually.');
+input.setAttribute('aria-label','Stamped Time in PH Time. Press STAMP TIME or Ctrl+Space for immediate capture, or enter manually.');
 const pad=n=>String(n).padStart(2,'0');
 const instantStamp=()=>{const d=new Date();input.value=`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;input.dataset.preciseEpoch=String(d.getTime());if(typeof window.calculatePickup==='function')window.calculatePickup();};
 const stampBtn=document.getElementById('stampBtn');
@@ -15,6 +15,14 @@ if(stampBtn){
  stampBtn.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&!e.repeat){instantStamp();stampBtn.dataset.keyboardStamped='1';}},{capture:true});
  stampBtn.addEventListener('click',e=>{if(stampBtn.dataset.keyboardStamped==='1'){e.preventDefault();e.stopImmediatePropagation();delete stampBtn.dataset.keyboardStamped;}},{capture:true});
 }
+// Global fast shortcut: Ctrl + Space stamps immediately on keydown.
+document.addEventListener('keydown',e=>{
+ if(!e.ctrlKey||e.altKey||e.metaKey||e.code!=='Space'||e.repeat)return;
+ e.preventDefault();
+ e.stopPropagation();
+ instantStamp();
+ if(stampBtn){stampBtn.classList.add('shortcut-stamped');setTimeout(()=>stampBtn.classList.remove('shortcut-stamped'),120);}
+},{capture:true});
 const normalize=()=>{
  const v=input.value.trim();
  if(!v)return;
