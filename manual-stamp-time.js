@@ -6,31 +6,20 @@ input.placeholder='YYYY-MM-DD HH:mm:ss';
 input.setAttribute('autocomplete','off');
 input.setAttribute('inputmode','numeric');
 input.setAttribute('aria-label','Stamped Time in PH Time. Press STAMP TIME or Ctrl+Space for immediate capture, or enter manually.');
-const pad=n=>String(n).padStart(2,'0');
-const instantStamp=()=>{const d=new Date();input.value=`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;input.dataset.preciseEpoch=String(d.getTime());if(typeof window.calculatePickup==='function')window.calculatePickup();};
+const phParts=d=>Object.fromEntries(new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Manila',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).formatToParts(d).map(x=>[x.type,x.value]));
+const instantStamp=()=>{const d=new Date(),p=phParts(d);input.value=`${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute}:${p.second}`;input.dataset.preciseEpoch=String(d.getTime());input.dataset.stampedAtPerformance=String(performance.now());input.dispatchEvent(new Event('input',{bubbles:true}));input.dataset.preciseEpoch=String(d.getTime());if(typeof window.calculatePickup==='function')window.calculatePickup();return d.getTime();};
+window.instantTicketStamp=instantStamp;
 const stampBtn=document.getElementById('stampBtn');
 if(stampBtn){
- stampBtn.addEventListener('pointerdown',e=>{if(e.button!==undefined&&e.button!==0)return;instantStamp();stampBtn.dataset.instantStamped='1';},{capture:true});
+ const capture=e=>{if(e.button!==undefined&&e.button!==0)return;e.preventDefault();e.stopImmediatePropagation();instantStamp();stampBtn.dataset.instantStamped='1';};
+ stampBtn.addEventListener('pointerdown',capture,{capture:true});
+ stampBtn.addEventListener('mousedown',e=>{if(stampBtn.dataset.instantStamped==='1')return;if(e.button!==0)return;e.preventDefault();e.stopImmediatePropagation();instantStamp();stampBtn.dataset.instantStamped='1';},{capture:true});
  stampBtn.addEventListener('click',e=>{if(stampBtn.dataset.instantStamped==='1'){e.preventDefault();e.stopImmediatePropagation();delete stampBtn.dataset.instantStamped;}},{capture:true});
- stampBtn.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&!e.repeat){instantStamp();stampBtn.dataset.keyboardStamped='1';}},{capture:true});
+ stampBtn.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&!e.repeat){e.preventDefault();e.stopImmediatePropagation();instantStamp();stampBtn.dataset.keyboardStamped='1';}},{capture:true});
  stampBtn.addEventListener('click',e=>{if(stampBtn.dataset.keyboardStamped==='1'){e.preventDefault();e.stopImmediatePropagation();delete stampBtn.dataset.keyboardStamped;}},{capture:true});
 }
-// Global fast shortcut: Ctrl + Space stamps immediately on keydown.
-document.addEventListener('keydown',e=>{
- if(!e.ctrlKey||e.altKey||e.metaKey||e.code!=='Space'||e.repeat)return;
- e.preventDefault();
- e.stopPropagation();
- instantStamp();
- if(stampBtn){stampBtn.classList.add('shortcut-stamped');setTimeout(()=>stampBtn.classList.remove('shortcut-stamped'),120);}
-},{capture:true});
-const normalize=()=>{
- const v=input.value.trim();
- if(!v)return;
- const m=v.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})$/);
- if(m)input.value=`${m[1]}-${m[2]}-${m[3]} ${m[4]}:${m[5]}:${m[6]}`;
- if(typeof window.calculatePickup==='function')window.calculatePickup();
-};
-input.addEventListener('input',()=>{delete input.dataset.preciseEpoch;if(typeof window.calculatePickup==='function')window.calculatePickup()});
-input.addEventListener('blur',normalize);
-input.addEventListener('paste',()=>setTimeout(normalize,0));
+document.addEventListener('keydown',e=>{if(!e.ctrlKey||e.altKey||e.metaKey||e.code!=='Space'||e.repeat)return;e.preventDefault();e.stopImmediatePropagation();instantStamp();if(stampBtn){stampBtn.classList.add('shortcut-stamped');setTimeout(()=>stampBtn.classList.remove('shortcut-stamped'),120);}},{capture:true});
+const normalize=()=>{const v=input.value.trim();if(!v)return;const m=v.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})$/);if(m)input.value=`${m[1]}-${m[2]}-${m[3]} ${m[4]}:${m[5]}:${m[6]}`;if(typeof window.calculatePickup==='function')window.calculatePickup();};
+input.addEventListener('input',()=>{if(typeof window.calculatePickup==='function')window.calculatePickup()});
+input.addEventListener('blur',normalize);input.addEventListener('paste',()=>setTimeout(normalize,0));
 })();
