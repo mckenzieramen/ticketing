@@ -6,5 +6,5 @@ function apply(){document.querySelectorAll('.header-chip .chip-icon').forEach((e
 let queued=false;const schedule=()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;apply()})};const obs=new MutationObserver(schedule);obs.observe(document.body,{subtree:true,childList:true});apply();
 import('./firebase-auth-sync.js?v=20261028-3').catch(console.error);
 import('./inbound-stamp-solved-time.js?v=20261028-4').catch(console.error);
-import('./ticket-records-ui.js?v=20261028-1').catch(console.error);
+import('./ticket-records-ui.js?v=20261028-6').catch(console.error);
 })();
