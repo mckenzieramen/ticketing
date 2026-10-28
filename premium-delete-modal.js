@@ -6,15 +6,20 @@ const style=document.createElement('style');style.textContent=`
 const modal=document.createElement('div');modal.className='pdm-backdrop';modal.setAttribute('aria-hidden','true');modal.innerHTML=`<div class="pdm-card" role="dialog" aria-modal="true" aria-labelledby="pdmTitle"><div class="pdm-top"><div class="pdm-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v5M14 11v5"/></svg></div><div class="pdm-copy"><h2 class="pdm-title" id="pdmTitle">Delete this ticket?</h2><p class="pdm-text">You’re about to permanently remove this record from Ticket Tracking.</p></div></div><div class="pdm-ticket"><small>Ticket record</small><strong id="pdmTicket">—</strong></div><div class="pdm-warning"><span>⚠</span><span>This action cannot be undone once the ticket is deleted.</span></div><div class="pdm-actions"><button type="button" class="pdm-btn pdm-cancel">Cancel</button><button type="button" class="pdm-btn pdm-delete">Delete Ticket</button></div></div>`;document.body.appendChild(modal);
 let pendingId=null,lastTrigger=null;
 function read(){try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch{return[]}}
-function hide(){modal.classList.remove('open');modal.setAttribute('aria-hidden','true');pendingId=null;if(lastTrigger&&document.contains(lastTrigger))lastTrigger.focus();lastTrigger=null}
+function hide(restoreFocus=true){modal.classList.remove('open');modal.setAttribute('aria-hidden','true');pendingId=null;if(restoreFocus&&lastTrigger&&document.contains(lastTrigger))lastTrigger.focus();lastTrigger=null}
 function show(id,number,trigger){if(!id)return;pendingId=id;lastTrigger=trigger||null;document.getElementById('pdmTicket').textContent=number?`#${number}`:'Ticket record';modal.classList.add('open');modal.setAttribute('aria-hidden','false');requestAnimationFrame(()=>modal.querySelector('.pdm-cancel').focus())}
-modal.querySelector('.pdm-cancel').addEventListener('click',hide);modal.addEventListener('click',e=>{if(e.target===modal)hide()});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.classList.contains('open'))hide()});
-modal.querySelector('.pdm-delete').addEventListener('click',()=>{if(!pendingId)return;const id=pendingId;const data=read().filter(x=>String(x.id)!==String(id));localStorage.setItem(KEY,JSON.stringify(data));location.reload()});
+modal.querySelector('.pdm-cancel').addEventListener('click',()=>hide(true));modal.addEventListener('click',e=>{if(e.target===modal)hide(true)});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.classList.contains('open'))hide(true)});
+modal.querySelector('.pdm-delete').addEventListener('click',()=>{
+ if(!pendingId)return;
+ const id=String(pendingId),before=read(),after=before.filter(x=>String(x.id)!==id);
+ if(after.length===before.length){hide(false);return}
+ // Close immediately. Never reload the whole dashboard for a delete.
+ hide(false);
+ localStorage.setItem(KEY,JSON.stringify(after));
+ window.dispatchEvent(new CustomEvent('ticket-data-updated',{detail:{type:'delete',id}}));
+});
 window.deleteTicket=id=>{const t=read().find(x=>String(x.id)===String(id));if(t)show(t.id,t.number)};
 function openFromButton(btn){const row=btn.closest('tr');if(!row)return;const number=row.children[1]?.textContent?.trim()||'';const data=read();let t=data.find(x=>String(x.number).trim()===number);if(!t){const inline=btn.getAttribute('onclick')||'';const m=inline.match(/deleteTicket\(['\"]([^'\"]+)['\"]\)/);if(m)t=data.find(x=>String(x.id)===m[1])}if(t)show(t.id,t.number,btn)}
-// One delegated handler on pointerdown makes the modal react on the first physical click,
-// even when the table is re-rendered and replaces the delete button DOM nodes.
 document.addEventListener('pointerdown',e=>{const btn=e.target.closest?.('.action-btn.delete');if(!btn)return;e.preventDefault();e.stopImmediatePropagation();openFromButton(btn)},true);
-// Suppress the legacy inline onclick/confirm after pointerdown already handled the action.
 document.addEventListener('click',e=>{const btn=e.target.closest?.('.action-btn.delete');if(!btn)return;e.preventDefault();e.stopImmediatePropagation();if(!modal.classList.contains('open'))openFromButton(btn)},true);
 })();
