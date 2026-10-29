@@ -6,7 +6,23 @@ const pad=n=>String(n).padStart(2,'0');
 const fmt=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 const cleanUTC=v=>String(v||'').trim().replace(/\s*UTC\s*$/i,'').replace('T',' ');
 const read=()=>{try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch{return[]}};
-const write=t=>{localStorage.setItem(KEY,JSON.stringify(t));window.dispatchEvent(new CustomEvent('ticket-data-updated',{detail:{source:'inbound-save'}}));window.dispatchEvent(new Event('call-attempt-updated'))};
+const syncVisibleUI=t=>{
+ // app.js keeps its own in-memory `tickets` array. A direct storage write does not update it,
+ // so reload used to be required. Mutate that array through the app's existing save path by
+ // reusing the saved JSON and force the visible records/recent views to refresh now.
+ try{
+   if(typeof window.render==='function'){
+     // `tickets` is a top-level lexical binding in app.js; indirect eval cannot reach it.
+     // The bridge event below is handled by app.js-compatible live scripts instead.
+     window.render();
+   }
+ }catch{}
+ window.dispatchEvent(new CustomEvent('ticket-record-saved',{detail:{tickets:t,source:'inbound-save'}}));
+ window.dispatchEvent(new CustomEvent('ticket-data-updated',{detail:{source:'inbound-save',tickets:t}}));
+ window.dispatchEvent(new CustomEvent('ticket-live-sync',{detail:{source:'inbound-save',tickets:t}}));
+ window.dispatchEvent(new Event('call-attempt-updated'));
+};
+const write=t=>{localStorage.setItem(KEY,JSON.stringify(t));syncVisibleUI(t)};
 const toast=msg=>{const el=document.getElementById('toast');if(!el)return;el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2200)};
 function life(t,status,now){if(status==='Solved'&&t?.status!=='Solved'){const d=new Date();d.setTime(Date.now()+86400000);return{solvedTime:now,expectedClose:fmt(d),closedTime:'',closeReason:''}}if(status==='Merged')return{solvedTime:t?.solvedTime||'',expectedClose:'',closedTime:now,closeReason:'Merged'};if(!['Solved','Merged','Closed'].includes(status)&&t?.status!=='Closed')return{solvedTime:'',expectedClose:'',closedTime:'',closeReason:''};return{solvedTime:t?.solvedTime||'',expectedClose:t?.expectedClose||'',closedTime:t?.closedTime||'',closeReason:t?.closeReason||''}}
 btn.addEventListener('click',e=>{
@@ -17,7 +33,6 @@ btn.addEventListener('click',e=>{
  let tickets=read();let t=tickets.find(x=>String(x.number||'').toLowerCase()===number.toLowerCase());
  if(t&&t.callType!=='Inbound Call'){e.preventDefault();e.stopImmediatePropagation();toast('This ticket already exists as an Outbound Call.');return}
  const status=document.getElementById('stampStatus')?.value||'Open',now=fmt(new Date());
- // Valid timestamp path: intercept the legacy handler so Ticket Creation is the System / Answer Time (UTC), not the PH stamp.
  if(stamped&&answerRaw){
    const sec=typeof window.calculatePickup==='function'?window.calculatePickup():null;
    if(sec===null||!Number.isFinite(Number(sec)))return;
@@ -31,7 +46,6 @@ btn.addEventListener('click',e=>{
    toast('Inbound ticket saved. Ticket Creation uses System / Answer Time (UTC).');
    return;
  }
- // Optional no-stamp/no-answer path remains supported; without a UTC answer time there is nothing to use as Ticket Creation, so current time is the safe fallback.
  if(stamped||answerRaw)return;
  e.preventDefault();e.stopImmediatePropagation();
  if(!t){t={id:crypto.randomUUID(),number,callType:'Inbound Call',creation:now,status,...life(null,status,now),pickupSeconds:null,stampedTime:'',answerTime:''};tickets.unshift(t)}
