@@ -1,8 +1,6 @@
 (()=>{'use strict';
 const TARGET=20,KEY='premiumTicketTracker.v1';
 const getStamp=()=>document.getElementById('stampedTime'),getAnswer=()=>document.getElementById('answerTime'),getBox=()=>document.getElementById('pickupResult');
-// Remove the legacy synchronous answerTime input handlers installed by app.js/older helpers.
-// Save handlers query this field by id, so replacing only this node is safe and makes typing native-speed.
 const oldAnswer=getAnswer();if(oldAnswer&&!oldAnswer.dataset.instantInput){const fresh=oldAnswer.cloneNode(true);fresh.dataset.instantInput='1';fresh.setAttribute('inputmode','text');fresh.setAttribute('autocomplete','off');fresh.placeholder='YYYY-MM-DD HH:mm:ss UTC';oldAnswer.replaceWith(fresh)}
 function parts(v,suffix){const clean=String(v||'').trim().replace(suffix,'').trim();const m=clean.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})$/);if(!m)return null;return m.slice(1).map(Number)}
 function parsePH(v){const p=parts(v,/\s*(?:PH|PHT|PH\s*Time)\s*$/i);if(!p)return null;const [y,mo,d,h,mi,s]=p;return Date.UTC(y,mo-1,d,h-8,mi,s)}
@@ -16,8 +14,6 @@ document.addEventListener('input',e=>{if(e.target?.id==='stampedTime'||e.target?
 document.addEventListener('change',e=>{if(e.target?.id==='answerTime')normalizeAnswer()},{passive:true});
 document.addEventListener('blur',e=>{if(e.target?.id==='answerTime')normalizeAnswer()},true);
 document.addEventListener('paste',e=>{if(e.target?.id==='answerTime')requestAnimationFrame(normalizeAnswer);else if(e.target?.id==='stampedTime')requestAnimationFrame(schedule)},{passive:true});
-// Keep app.js' in-memory ticket array aligned with any save that writes directly to storage.
-// This is what makes Ticket Records and Recent Tickets update in the same save turn without reload.
 let syncing=false,lastRaw=localStorage.getItem(KEY)||'[]';
 function syncRecords(force=false){if(syncing)return;const raw=localStorage.getItem(KEY)||'[]';if(!force&&raw===lastRaw)return;let next;try{next=JSON.parse(raw)}catch{return}if(!Array.isArray(next))return;syncing=true;try{tickets=next;lastRaw=raw;render();window.dispatchEvent(new CustomEvent('ticket-records-rendered'))}catch(e){console.error('Instant record sync failed',e)}finally{syncing=false}}
 window.instantTicketRecordSync=()=>syncRecords(true);
@@ -25,6 +21,6 @@ window.addEventListener('ticket-data-updated',()=>syncRecords());
 window.addEventListener('ticket-live-sync',()=>syncRecords());
 window.addEventListener('storage',e=>{if(!e.key||e.key===KEY)syncRecords()});
 document.addEventListener('click',e=>{if(e.target.closest?.('#saveStampBtn'))queueMicrotask(()=>syncRecords(true))},true);
-document.addEventListener('submit',e=>{if(e.target?.id==='ticketForm')queueMicrotask(()=>syncRecords(true)},true);
+document.addEventListener('submit',e=>{if(e.target?.id==='ticketForm')queueMicrotask(()=>syncRecords(true))},true);
 queueMicrotask(calculate);
 })();
