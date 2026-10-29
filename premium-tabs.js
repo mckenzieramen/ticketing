@@ -4,18 +4,19 @@ const stats=document.getElementById('statsGrid');
 const workspace=document.querySelector('.workspace-grid');
 const records=document.querySelector('.records-panel');
 const analytics=document.querySelector('.analytics-grid');
+const dailyPerformance=document.querySelector('.upgrade-section');
 if(!workspace||!records||!analytics){document.documentElement.classList.remove('premium-booting');return;}
 const cards=[...workspace.children];
 const outbound=cards[0],stamp=cards[1],attendance=cards[2];
 const nav=document.createElement('nav');nav.className='premium-tabs';nav.setAttribute('aria-label','Ticket tracker sections');
 nav.innerHTML='<button type="button" data-view="dashboard">Dashboard</button><button type="button" data-view="calls">Inbound & Outbound</button><button type="button" data-view="tickets">All Tickets</button><button type="button" data-view="attendance">Attendance</button>';
 main.insertBefore(nav,stats||main.firstChild);
-const sections={dashboard:[stats,analytics],calls:[outbound,stamp],tickets:[records],attendance:[attendance]};
-const managed=[stats,analytics,outbound,stamp,records,attendance].filter(Boolean);
+const sections={dashboard:[stats,analytics],calls:[outbound,stamp],tickets:[records],attendance:[attendance,dailyPerformance].filter(Boolean)};
+const managed=[stats,analytics,outbound,stamp,records,attendance,dailyPerformance].filter(Boolean);
 function show(view){const visible=new Set(sections[view]||sections.dashboard);managed.forEach(el=>{el.hidden=!visible.has(el)});workspace.hidden=![outbound,stamp,attendance].some(el=>el&&!el.hidden);nav.querySelectorAll('button').forEach(b=>{const active=b.dataset.view===view;b.classList.toggle('active',active);b.setAttribute('aria-selected',String(active))});try{sessionStorage.setItem('premiumTicketTracker.activeTab',view)}catch{}window.dispatchEvent(new CustomEvent('tracker-view-changed',{detail:{view}}))}
 nav.addEventListener('pointerdown',e=>{const b=e.target.closest('button[data-view]');if(!b)return;e.preventDefault();show(b.dataset.view)},{passive:false});
 nav.addEventListener('click',e=>{const b=e.target.closest('button[data-view]');if(!b)return;e.preventDefault();show(b.dataset.view)});
-const style=document.createElement('style');style.textContent=`.premium-tabs{display:flex;gap:7px;align-items:center;margin:0 0 14px;padding:6px;background:#fff;border:1px solid #dce6ef;border-radius:13px;box-shadow:0 5px 18px rgba(15,54,88,.07);position:sticky;top:8px;z-index:900}.premium-tabs button{border:0;background:transparent;color:#5a6f84;padding:9px 15px;border-radius:9px;font:800 12px Inter,sans-serif;cursor:pointer;transition:background .06s ease,color .06s ease,transform .06s ease;white-space:nowrap}.premium-tabs button:hover{background:#eef5fb;color:#153f63}.premium-tabs button:active{transform:scale(.98)}.premium-tabs button.active{background:#123f69;color:#fff;box-shadow:0 4px 10px rgba(18,63,105,.18)}[hidden]{display:none!important}@media(max-width:700px){.premium-tabs{overflow-x:auto;position:static}.premium-tabs button{flex:0 0 auto;padding:9px 12px}}`;document.head.appendChild(style);
+const style=document.createElement('style');style.textContent=`.premium-tabs{display:flex;gap:7px;align-items:center;margin:0 0 14px;padding:6px;background:#fff;border:1px solid #dce6ef;border-radius:13px;box-shadow:0 5px 18px rgba(15,54,88,.07);position:sticky;top:8px;z-index:900}.premium-tabs button{border:0;background:transparent;color:#5a6f84;padding:9px 15px;border-radius:9px;font:800 12px Inter,sans-serif;cursor:pointer;transition:background .06s ease,color .06s ease,transform .06s ease;white-space:nowrap}.premium-tabs button:hover{background:#eef5fb;color:#153f63}.premium-tabs button:active{transform:scale(.98)}.premium-tabs button.active{background:#123f69;color:#fff;box-shadow:0 4px 10px rgba(18,63,105,.18)}[hidden]{display:none!important}.workspace-grid:has(> .panel:not([hidden])){grid-template-columns:repeat(2,minmax(0,1fr))}.workspace-grid>.panel:not([hidden]):only-child{grid-column:1/-1;width:100%}@media(max-width:700px){.premium-tabs{overflow-x:auto;position:static}.premium-tabs button{flex:0 0 auto;padding:9px 12px}.workspace-grid:has(> .panel:not([hidden])){grid-template-columns:1fr}}`;document.head.appendChild(style);
 let initial='dashboard';try{let saved=sessionStorage.getItem('premiumTicketTracker.activeTab');if(saved==='stamp')saved='calls';if(sections[saved])initial=saved}catch{}show(initial);
 requestAnimationFrame(()=>document.documentElement.classList.remove('premium-booting'));
 })();
