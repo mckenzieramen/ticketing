@@ -1,37 +1,21 @@
 (()=>{'use strict';
 const main=document.querySelector('main.container');if(!main)return;
-const stats=document.getElementById('statsGrid');
-const workspace=document.querySelector('.workspace-grid');
-const records=document.querySelector('.records-panel');
-const analytics=document.querySelector('.analytics-grid');
-const dailyPerformance=document.querySelector('.upgrade-section');
-if(!workspace||!records||!analytics){document.documentElement.classList.remove('premium-booting');return;}
-const cards=[...workspace.children];
-const outbound=cards[0],stamp=cards[1],attendance=cards[2];
-const recentTickets=document.getElementById('recentTicketsPanel');
-const nav=document.createElement('nav');nav.className='premium-tabs';nav.setAttribute('aria-label','Ticket tracker sections');
+const stats=document.getElementById('statsGrid'),workspace=document.querySelector('.workspace-grid'),records=document.querySelector('.records-panel'),analytics=document.querySelector('.analytics-grid'),dailyPerformance=document.querySelector('.upgrade-section');
+if(!workspace||!records||!analytics){document.documentElement.classList.remove('premium-booting');return}
+const cards=[...workspace.children],outbound=cards[0],stamp=cards[1],attendance=cards[2],recentTickets=document.getElementById('recentTicketsPanel');
+let nav=main.querySelector(':scope > .premium-tabs');if(!nav){nav=document.createElement('nav');nav.className='premium-tabs';nav.setAttribute('aria-label','Ticket tracker sections');main.insertBefore(nav,stats||main.firstChild)}
 nav.innerHTML='<button type="button" data-view="dashboard"><span>Dashboard</span></button><button type="button" data-view="calls"><span>Inbound &amp; Outbound</span></button><button type="button" data-view="tickets"><span>All Tickets</span></button><button type="button" data-view="attendance"><span>Attendance</span></button>';
-main.insertBefore(nav,stats||main.firstChild);
-const sections={dashboard:[stats,analytics,dailyPerformance].filter(Boolean),calls:[outbound,stamp,recentTickets].filter(Boolean),tickets:[records],attendance:[attendance].filter(Boolean)};
-const managed=[stats,analytics,outbound,stamp,recentTickets,records,attendance,dailyPerformance].filter(Boolean);
-managed.forEach(el=>el.classList.add('premium-view-section'));
-let activeView='',switching=false;
-function paintNav(view){nav.querySelectorAll('button[data-view]').forEach(b=>{const active=b.dataset.view===view;b.classList.toggle('active',active);b.setAttribute('aria-selected',String(active))})}
-function show(view){
- if(!sections[view])view='dashboard';
- if(view===activeView){paintNav(view);return}
- const visible=new Set(sections[view]);
- activeView=view;switching=true;paintNav(view);
- for(const el of managed)el.classList.toggle('premium-view-hidden',!visible.has(el));
- const hasWorkspace=[outbound,stamp,recentTickets,attendance].some(el=>el&&visible.has(el));
- workspace.classList.toggle('premium-view-hidden',!hasWorkspace);
- try{sessionStorage.setItem('premiumTicketTracker.activeTab',view)}catch{}
- requestAnimationFrame(()=>{switching=false;window.dispatchEvent(new CustomEvent('tracker-view-changed',{detail:{view}}))});
-}
-function activate(e){const b=e.target.closest('button[data-view]');if(!b)return;if(e.type==='click'&&e.detail!==0)return;e.preventDefault();e.stopPropagation();show(b.dataset.view)}
-nav.addEventListener('pointerdown',activate,{passive:false});
-nav.addEventListener('click',activate,{passive:false});
-const style=document.createElement('style');style.textContent=`.premium-tabs{display:flex!important;gap:7px;align-items:center;margin:0 0 14px;padding:6px;background:#fff;border:1px solid #dce6ef;border-radius:13px;box-shadow:0 5px 18px rgba(15,54,88,.07);position:sticky;top:8px;z-index:900;visibility:visible!important;opacity:1!important;contain:layout style}.premium-tabs button,.premium-tabs button span{visibility:visible!important;opacity:1!important}.premium-tabs button{display:inline-flex!important;align-items:center;justify-content:center;border:0;background:transparent;color:#5a6f84;padding:9px 15px;border-radius:9px;font:800 12px Inter,sans-serif;cursor:pointer;white-space:nowrap;touch-action:manipulation;user-select:none;min-height:34px;line-height:16px;transition:background-color .11s ease,color .11s ease,box-shadow .11s ease,transform .08s ease}.premium-tabs button:hover{background:#eef5fb;color:#153f63}.premium-tabs button:active{transform:scale(.985)}.premium-tabs button.active{background:#123f69;color:#fff;box-shadow:0 3px 8px rgba(18,63,105,.16)}.premium-tabs button.active span{color:#fff!important}.premium-view-hidden{display:none!important}.premium-view-section:not(.premium-view-hidden){animation:premiumViewIn .10s ease-out both}@keyframes premiumViewIn{from{opacity:.985}to{opacity:1}}.workspace-grid:not(.premium-view-hidden){grid-template-columns:repeat(2,minmax(0,1fr))}.workspace-grid:not(.premium-view-hidden)>.panel:not(.premium-view-hidden):only-child{grid-column:1/-1;width:100%}@media(max-width:700px){.premium-tabs{overflow-x:auto;position:static}.premium-tabs button{flex:0 0 auto;padding:9px 12px}.workspace-grid:not(.premium-view-hidden){grid-template-columns:1fr}}@media(prefers-reduced-motion:reduce){.premium-tabs button,.premium-view-section:not(.premium-view-hidden){transition:none;animation:none}}`;document.head.appendChild(style);
-let initial='dashboard';try{let saved=sessionStorage.getItem('premiumTicketTracker.activeTab');if(saved==='stamp')saved='calls';if(sections[saved])initial=saved}catch{}show(initial);
+const sections={dashboard:[stats,analytics,dailyPerformance].filter(Boolean),calls:[outbound,stamp,recentTickets].filter(Boolean),tickets:[records].filter(Boolean),attendance:[attendance].filter(Boolean)};
+const managed=[stats,analytics,outbound,stamp,recentTickets,records,attendance,dailyPerformance].filter(Boolean);managed.forEach(el=>el.classList.add('premium-view-section'));
+let activeView='';
+function paint(view){for(const b of nav.querySelectorAll('button[data-view]')){const on=b.dataset.view===view;b.classList.toggle('active',on);b.setAttribute('aria-selected',String(on));b.setAttribute('tabindex',on?'0':'-1')}}
+function apply(view,notify=true){if(!sections[view])view='dashboard';activeView=view;const visible=new Set(sections[view]);paint(view);for(const el of managed)el.classList.toggle('premium-view-hidden',!visible.has(el));const workspaceVisible=[outbound,stamp,recentTickets,attendance].some(el=>el&&visible.has(el));workspace.classList.toggle('premium-view-hidden',!workspaceVisible);nav.classList.remove('premium-view-hidden');nav.style.removeProperty('display');nav.style.removeProperty('visibility');nav.style.removeProperty('opacity');try{sessionStorage.setItem('premiumTicketTracker.activeTab',view)}catch{}if(notify)requestAnimationFrame(()=>window.dispatchEvent(new CustomEvent('tracker-view-changed',{detail:{view}})))}
+function activate(e){const b=e.target.closest('.premium-tabs button[data-view]');if(!b||!nav.contains(b))return;e.preventDefault();e.stopPropagation();apply(b.dataset.view)}
+nav.addEventListener('pointerdown',activate,{passive:false});nav.addEventListener('click',e=>{if(e.detail===0)activate(e)},{passive:false});nav.addEventListener('keydown',e=>{const b=e.target.closest('button[data-view]');if(!b)return;const buttons=[...nav.querySelectorAll('button[data-view]')],i=buttons.indexOf(b);if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();const next=buttons[(i+(e.key==='ArrowRight'?1:-1)+buttons.length)%buttons.length];next.focus();apply(next.dataset.view)}else if(e.key==='Enter'||e.key===' '){activate(e)}});
+const style=document.createElement('style');style.id='premium-tabs-lock-style';style.textContent=`main.container>.premium-tabs{display:flex!important;visibility:visible!important;opacity:1!important;gap:7px;align-items:center;margin:0 0 14px;padding:6px;background:#fff;border:1px solid #dce6ef;border-radius:13px;box-shadow:0 5px 18px rgba(15,54,88,.07);position:sticky;top:8px;z-index:2147483000;min-height:48px;isolation:isolate}.premium-tabs button,.premium-tabs button span{display:inline-flex!important;visibility:visible!important;opacity:1!important}.premium-tabs button{align-items:center;justify-content:center;border:0;background:transparent;color:#5a6f84;padding:9px 15px;border-radius:9px;font:800 12px Inter,sans-serif;cursor:pointer;white-space:nowrap;touch-action:manipulation;user-select:none;min-height:34px;line-height:16px;transition:background-color .1s ease,color .1s ease,box-shadow .1s ease}.premium-tabs button:hover{background:#eef5fb;color:#153f63}.premium-tabs button.active{background:#123f69!important;color:#fff!important;box-shadow:0 3px 8px rgba(18,63,105,.16)}.premium-tabs button.active span{color:#fff!important}.premium-view-hidden{display:none!important}main.container>.premium-tabs.premium-view-hidden{display:flex!important}.workspace-grid:not(.premium-view-hidden){grid-template-columns:repeat(2,minmax(0,1fr))}.workspace-grid:not(.premium-view-hidden)>.panel:not(.premium-view-hidden):only-child{grid-column:1/-1;width:100%}@media(max-width:700px){main.container>.premium-tabs{overflow-x:auto;position:sticky}.premium-tabs button{flex:0 0 auto;padding:9px 12px}.workspace-grid:not(.premium-view-hidden){grid-template-columns:1fr}}@media(prefers-reduced-motion:reduce){.premium-tabs button{transition:none}}`;document.getElementById(style.id)?.remove();document.head.appendChild(style);
+let initial='dashboard';try{let saved=sessionStorage.getItem('premiumTicketTracker.activeTab');if(saved==='stamp')saved='calls';if(sections[saved])initial=saved}catch{}apply(initial,false);
+// Self-heal navigation if another renderer changes classes/styles later.
+let healing=false;const heal=()=>{if(healing)return;healing=true;requestAnimationFrame(()=>{healing=false;if(!document.documentElement.contains(nav))return;const selected=nav.querySelector('button.active[data-view]')?.dataset.view||activeView||'dashboard';if(nav.classList.contains('premium-view-hidden')||getComputedStyle(nav).display==='none'||getComputedStyle(nav).visibility==='hidden'||getComputedStyle(nav).opacity==='0')apply(selected,false);else paint(selected)})};
+new MutationObserver(heal).observe(nav,{attributes:true,attributeFilter:['class','style'],subtree:true});window.addEventListener('ticket-data-updated',heal);window.addEventListener('call-attempt-updated',heal);window.addEventListener('storage',heal);window.addEventListener('pageshow',()=>apply(activeView||initial,false));document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')apply(activeView||initial,false)});
 requestAnimationFrame(()=>document.documentElement.classList.remove('premium-booting'));
 })();
