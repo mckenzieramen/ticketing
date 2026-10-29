@@ -8,11 +8,12 @@ const dailyPerformance=document.querySelector('.upgrade-section');
 if(!workspace||!records||!analytics){document.documentElement.classList.remove('premium-booting');return;}
 const cards=[...workspace.children];
 const outbound=cards[0],stamp=cards[1],attendance=cards[2];
+const recentTickets=document.getElementById('recentTicketsPanel');
 const nav=document.createElement('nav');nav.className='premium-tabs';nav.setAttribute('aria-label','Ticket tracker sections');
 nav.innerHTML='<button type="button" data-view="dashboard">Dashboard</button><button type="button" data-view="calls">Inbound & Outbound</button><button type="button" data-view="tickets">All Tickets</button><button type="button" data-view="attendance">Attendance</button>';
 main.insertBefore(nav,stats||main.firstChild);
-const sections={dashboard:[stats,analytics],calls:[outbound,stamp],tickets:[records],attendance:[attendance,dailyPerformance].filter(Boolean)};
-const managed=[stats,analytics,outbound,stamp,records,attendance,dailyPerformance].filter(Boolean);
+const sections={dashboard:[stats,analytics],calls:[outbound,stamp,recentTickets].filter(Boolean),tickets:[records],attendance:[attendance,dailyPerformance].filter(Boolean)};
+const managed=[stats,analytics,outbound,stamp,recentTickets,records,attendance,dailyPerformance].filter(Boolean);
 managed.forEach(el=>el.classList.add('premium-view-section'));
 let activeView='';
 function show(view){
@@ -21,7 +22,7 @@ function show(view){
  activeView=view;
  const visible=new Set(sections[view]);
  managed.forEach(el=>el.classList.toggle('premium-view-hidden',!visible.has(el)));
- const hasWorkspace=[outbound,stamp,attendance].some(el=>el&&visible.has(el));
+ const hasWorkspace=[outbound,stamp,recentTickets,attendance].some(el=>el&&visible.has(el));
  workspace.classList.toggle('premium-view-hidden',!hasWorkspace);
  nav.querySelectorAll('button[data-view]').forEach(b=>{const active=b.dataset.view===view;if(b.classList.contains('active')!==active)b.classList.toggle('active',active);b.setAttribute('aria-selected',String(active))});
  try{sessionStorage.setItem('premiumTicketTracker.activeTab',view)}catch{}
