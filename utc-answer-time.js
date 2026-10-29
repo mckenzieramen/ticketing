@@ -5,10 +5,12 @@ window.parseDate=function(value){const v=String(value||'').trim();if(/UTC$/i.tes
 const input=document.getElementById('answerTime');if(!input)return;
 input.setAttribute('inputmode','text');input.setAttribute('aria-label','System / Answer Time in UTC');input.placeholder='YYYY-MM-DD HH:mm:ss UTC';
 const calculate=()=>{if(typeof window.calculatePickup==='function')window.calculatePickup()};
-const normalize=()=>{const v=input.value.trim();if(!v){calculate();return}const m=v.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})(?:\s*UTC)?$/i);if(m){const next=`${m[1]}-${m[2]}-${m[3]} ${m[4]}:${m[5]}:${m[6]} UTC`;if(input.value!==next)input.value=next}calculate();};
-// Reflect pickup information on every keystroke instead of waiting for blur.
-input.addEventListener('input',calculate,{passive:true});
+let frame=0;
+const calculateNextPaint=()=>{if(frame)return;frame=requestAnimationFrame(()=>{frame=0;calculate()})};
+const normalize=()=>{const v=input.value.trim();if(!v){calculateNextPaint();return}const m=v.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})(?:\s*UTC)?$/i);if(m){const next=`${m[1]}-${m[2]}-${m[3]} ${m[4]}:${m[5]}:${m[6]} UTC`;if(input.value!==next)input.value=next}calculateNextPaint();};
+// Keep keyboard/paste handling lightweight: never do pickup DOM work synchronously inside the input event.
+input.addEventListener('input',calculateNextPaint,{passive:true});
 input.addEventListener('change',normalize);
 input.addEventListener('blur',normalize);
-input.addEventListener('paste',()=>queueMicrotask(normalize));
+input.addEventListener('paste',()=>requestAnimationFrame(normalize),{passive:true});
 })();
