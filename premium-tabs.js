@@ -10,7 +10,7 @@ const cards=[...workspace.children];
 const outbound=cards[0],stamp=cards[1],attendance=cards[2];
 const recentTickets=document.getElementById('recentTicketsPanel');
 const nav=document.createElement('nav');nav.className='premium-tabs';nav.setAttribute('aria-label','Ticket tracker sections');
-nav.innerHTML='<button type="button" data-view="dashboard">Dashboard</button><button type="button" data-view="calls">Inbound & Outbound</button><button type="button" data-view="tickets">All Tickets</button><button type="button" data-view="attendance">Attendance</button>';
+nav.innerHTML='<button type="button" data-view="dashboard"><span>Dashboard</span></button><button type="button" data-view="calls"><span>Inbound &amp; Outbound</span></button><button type="button" data-view="tickets"><span>All Tickets</span></button><button type="button" data-view="attendance"><span>Attendance</span></button>';
 main.insertBefore(nav,stats||main.firstChild);
 const sections={dashboard:[stats,analytics],calls:[outbound,stamp,recentTickets].filter(Boolean),tickets:[records],attendance:[attendance,dailyPerformance].filter(Boolean)};
 const managed=[stats,analytics,outbound,stamp,recentTickets,records,attendance,dailyPerformance].filter(Boolean);
@@ -18,20 +18,21 @@ managed.forEach(el=>el.classList.add('premium-view-section'));
 let activeView='';
 function show(view){
  if(!sections[view])view='dashboard';
- if(view===activeView)return;
- activeView=view;
  const visible=new Set(sections[view]);
- managed.forEach(el=>el.classList.toggle('premium-view-hidden',!visible.has(el)));
- const hasWorkspace=[outbound,stamp,recentTickets,attendance].some(el=>el&&visible.has(el));
- workspace.classList.toggle('premium-view-hidden',!hasWorkspace);
- nav.querySelectorAll('button[data-view]').forEach(b=>{const active=b.dataset.view===view;if(b.classList.contains('active')!==active)b.classList.toggle('active',active);b.setAttribute('aria-selected',String(active))});
- try{sessionStorage.setItem('premiumTicketTracker.activeTab',view)}catch{}
- requestAnimationFrame(()=>window.dispatchEvent(new CustomEvent('tracker-view-changed',{detail:{view}})));
+ if(view!==activeView){
+  activeView=view;
+  managed.forEach(el=>el.classList.toggle('premium-view-hidden',!visible.has(el)));
+  const hasWorkspace=[outbound,stamp,recentTickets,attendance].some(el=>el&&visible.has(el));
+  workspace.classList.toggle('premium-view-hidden',!hasWorkspace);
+  try{sessionStorage.setItem('premiumTicketTracker.activeTab',view)}catch{}
+  requestAnimationFrame(()=>window.dispatchEvent(new CustomEvent('tracker-view-changed',{detail:{view}})));
+ }
+ nav.querySelectorAll('button[data-view]').forEach(b=>{const active=b.dataset.view===view;b.classList.toggle('active',active);b.setAttribute('aria-selected',String(active));b.style.visibility='visible';b.style.opacity='1';const s=b.querySelector('span');if(s){s.style.visibility='visible';s.style.opacity='1'}});
 }
-function activate(e){const b=e.target.closest('button[data-view]');if(!b)return;e.preventDefault();show(b.dataset.view)}
+function activate(e){const b=e.target.closest('button[data-view]');if(!b)return;e.preventDefault();e.stopPropagation();show(b.dataset.view)}
 nav.addEventListener('pointerdown',activate,{passive:false});
-nav.addEventListener('click',e=>{if(e.pointerType)return;activate(e)});
-const style=document.createElement('style');style.textContent=`.premium-tabs{display:flex;gap:7px;align-items:center;margin:0 0 14px;padding:6px;background:#fff;border:1px solid #dce6ef;border-radius:13px;box-shadow:0 5px 18px rgba(15,54,88,.07);position:sticky;top:8px;z-index:900}.premium-tabs button{border:0;background:transparent;color:#5a6f84;padding:9px 15px;border-radius:9px;font:800 12px Inter,sans-serif;cursor:pointer;transition:background .035s linear,color .035s linear;white-space:nowrap;touch-action:manipulation;user-select:none}.premium-tabs button:hover{background:#eef5fb;color:#153f63}.premium-tabs button.active{background:#123f69;color:#fff;box-shadow:0 3px 8px rgba(18,63,105,.16)}.premium-view-hidden{display:none!important}.workspace-grid:not(.premium-view-hidden){grid-template-columns:repeat(2,minmax(0,1fr))}.workspace-grid:not(.premium-view-hidden)>.panel:not(.premium-view-hidden):only-child{grid-column:1/-1;width:100%}@media(max-width:700px){.premium-tabs{overflow-x:auto;position:static}.premium-tabs button{flex:0 0 auto;padding:9px 12px}.workspace-grid:not(.premium-view-hidden){grid-template-columns:1fr}}`;document.head.appendChild(style);
+nav.addEventListener('click',activate,{passive:false});
+const style=document.createElement('style');style.textContent=`.premium-tabs{display:flex!important;gap:7px;align-items:center;margin:0 0 14px;padding:6px;background:#fff;border:1px solid #dce6ef;border-radius:13px;box-shadow:0 5px 18px rgba(15,54,88,.07);position:sticky;top:8px;z-index:900;visibility:visible!important;opacity:1!important}.premium-tabs button,.premium-tabs button span{visibility:visible!important;opacity:1!important}.premium-tabs button{display:inline-flex!important;align-items:center;justify-content:center;border:0;background:transparent;color:#5a6f84;padding:9px 15px;border-radius:9px;font:800 12px Inter,sans-serif;cursor:pointer;white-space:nowrap;touch-action:manipulation;user-select:none;min-height:34px;line-height:16px}.premium-tabs button:hover{background:#eef5fb;color:#153f63}.premium-tabs button.active{background:#123f69;color:#fff;box-shadow:0 3px 8px rgba(18,63,105,.16)}.premium-tabs button.active span{color:#fff!important}.premium-view-hidden{display:none!important}.workspace-grid:not(.premium-view-hidden){grid-template-columns:repeat(2,minmax(0,1fr))}.workspace-grid:not(.premium-view-hidden)>.panel:not(.premium-view-hidden):only-child{grid-column:1/-1;width:100%}@media(max-width:700px){.premium-tabs{overflow-x:auto;position:static}.premium-tabs button{flex:0 0 auto;padding:9px 12px}.workspace-grid:not(.premium-view-hidden){grid-template-columns:1fr}}`;document.head.appendChild(style);
 let initial='dashboard';try{let saved=sessionStorage.getItem('premiumTicketTracker.activeTab');if(saved==='stamp')saved='calls';if(sections[saved])initial=saved}catch{}show(initial);
 requestAnimationFrame(()=>document.documentElement.classList.remove('premium-booting'));
 })();
