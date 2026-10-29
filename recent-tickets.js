@@ -10,7 +10,10 @@ function normalizeStatus(row){const cells=row?.children;if(!cells||cells.length<
 let rendering=false,renderFrame=0,lastHTML='';
 function render(){if(rendering)return;rendering=true;try{const panel=ensure(),src=sourceTable();if(!panel||!src)return;const dst=panel.querySelector('#recentTicketsTable'),head=dst.querySelector('thead'),body=dst.querySelector('tbody');const srcHead=src.querySelector('thead');if(srcHead&&head.innerHTML!==srcHead.innerHTML)head.innerHTML=srcHead.innerHTML;const rows=[...src.querySelectorAll('tbody#ticketTableBody > tr')].slice(0,5);let html;if(!rows.length){const cols=Math.max(1,srcHead?.querySelectorAll('th').length||1);html=`<tr><td colspan="${cols}" class="recent-empty">No recent inbound or outbound tickets yet.</td></tr>`}else html=rows.map(r=>{const c=r.cloneNode(true);c.removeAttribute('style');c.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));normalizeStatus(c);return c.outerHTML}).join('');if(html!==lastHTML){lastHTML=html;body.innerHTML=html}}finally{rendering=false}}
 function syncNow(){if(renderFrame)return;renderFrame=requestAnimationFrame(()=>{renderFrame=0;render()})}
-const srcBody=document.getElementById('ticketTableBody');if(srcBody)new MutationObserver(syncNow).observe(srcBody,{childList:true,subtree:true,attributes:true,characterData:true,attributeFilter:['class','style','value']});
+const srcBody=document.getElementById('ticketTableBody');
+// Only observe rows being added/removed/replaced. Status/call-attempt editors already emit explicit sync events,
+// so watching every text/style/attribute mutation caused unnecessary render churn.
+if(srcBody)new MutationObserver(syncNow).observe(srcBody,{childList:true});
 render();
 ['ticket-live-sync','call-attempt-updated','ticket-record-saved','ticket-records-rendered'].forEach(name=>window.addEventListener(name,syncNow));
 window.addEventListener('tracker-view-changed',e=>{if(e.detail?.view==='calls'||e.detail?.view==='dashboard')syncNow()});
