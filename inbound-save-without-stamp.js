@@ -7,20 +7,9 @@ const fmt=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pa
 const cleanUTC=v=>String(v||'').trim().replace(/\s*UTC\s*$/i,'').replace('T',' ');
 const read=()=>{try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch{return[]}};
 const syncVisibleUI=t=>{
- // app.js keeps its own in-memory `tickets` array. A direct storage write does not update it,
- // so reload used to be required. Mutate that array through the app's existing save path by
- // reusing the saved JSON and force the visible records/recent views to refresh now.
- try{
-   if(typeof window.render==='function'){
-     // `tickets` is a top-level lexical binding in app.js; indirect eval cannot reach it.
-     // The bridge event below is handled by app.js-compatible live scripts instead.
-     window.render();
-   }
- }catch{}
+ // Keep one explicit record event for the direct renderer. The storage bridge emits the
+ // single live-sync event, avoiding several full-page refresh reactions for one save.
  window.dispatchEvent(new CustomEvent('ticket-record-saved',{detail:{tickets:t,source:'inbound-save'}}));
- window.dispatchEvent(new CustomEvent('ticket-data-updated',{detail:{source:'inbound-save',tickets:t}}));
- window.dispatchEvent(new CustomEvent('ticket-live-sync',{detail:{source:'inbound-save',tickets:t}}));
- window.dispatchEvent(new Event('call-attempt-updated'));
 };
 const write=t=>{localStorage.setItem(KEY,JSON.stringify(t));syncVisibleUI(t)};
 const toast=msg=>{const el=document.getElementById('toast');if(!el)return;el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2200)};
