@@ -2,22 +2,24 @@
 const stamp=document.getElementById('stampedTime'),answer=document.getElementById('answerTime'),box=document.getElementById('pickupResult');
 if(!stamp||!answer||!box)return;
 const TARGET=20;
-function parsePH(v){const m=String(v||'').trim().replace(/\s*PH\s*Time$/i,'').match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})$/);if(!m)return null;return Date.UTC(+m[1],+m[2]-1,+m[3],+m[4]-8,+m[5],+m[6]);}
-function parseUTC(v){const m=String(v||'').trim().match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})(?:\s*UTC)?$/i);if(!m)return null;return Date.UTC(+m[1],+m[2]-1,+m[3],+m[4],+m[5],+m[6]);}
+function parts(v,suffix){const clean=String(v||'').trim().replace(suffix,'').trim();const m=clean.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})$/);if(!m)return null;return m.slice(1).map(Number)}
+function parsePH(v){const p=parts(v,/\s*(?:PH|PHT|PH\s*Time)\s*$/i);if(!p)return null;const [y,mo,d,h,mi,s]=p;return Date.UTC(y,mo-1,d,h-8,mi,s)}
+function parseUTC(v){const p=parts(v,/\s*UTC\s*$/i);if(!p)return null;const [y,mo,d,h,mi,s]=p;return Date.UTC(y,mo-1,d,h,mi,s)}
+function renderWaiting(){box.className='pickup-result empty';box.innerHTML='<div><span class="bolt">ϟ</span><div><small>Pickup Time</small><strong>Waiting for timestamps</strong><em>Press STAMP TIME in PH time, then paste System / Answer Time in UTC.</em></div></div>'}
 function calculate(){
- const stampUTC=parsePH(stamp.value),systemUTC=parseUTC(answer.value);
- if(stampUTC==null||systemUTC==null){box.className='pickup-result empty';box.innerHTML='<div><span class="bolt">ϟ</span><div><small>Pickup Time</small><strong>Waiting for timestamps</strong><em>Stamp PH time, then paste the UTC system / answer time.</em></div></div>';return null}
- // STAMP TIME is the local PH capture. System / Answer Time is UTC.
- // Normalize PH stamp to UTC first. Pickup is the absolute elapsed gap between the two captured instants.
- // This keeps valid near-simultaneous captures from being rejected when the source system records the UTC event just after the local stamp.
- const sec=Math.round(Math.abs(systemUTC-stampUTC)/1000);
+ const stampUTC=parsePH(stamp.value),answerUTC=parseUTC(answer.value);
+ if(stampUTC==null||answerUTC==null){renderWaiting();return null}
+ // PH stamp is normalized to UTC (+08:00 -> UTC) before subtraction.
+ // Pickup duration is Answer/System UTC minus the normalized PH stamp.
+ const sec=Math.round((answerUTC-stampUTC)/1000);
+ if(sec<0){box.className='pickup-result late';box.innerHTML='<div><span class="bolt">ϟ</span><div><small>Pickup Time</small><strong>Invalid timestamp order</strong><em>System / Answer Time is earlier than the PH stamp after UTC conversion. Check the copied timestamps.</em></div></div>';return null}
  const ok=sec<=TARGET;
  box.className='pickup-result '+(ok?'':'late');
- box.innerHTML=`<div><span class="bolt">ϟ</span><div><small>Pickup Time</small><strong>${sec} second${sec===1?'':'s'} · ${ok?'Within Target':'Over Target'}</strong><em>PH stamp normalized to UTC automatically · Target: ≤ ${TARGET} seconds</em></div></div>`;
+ box.innerHTML=`<div><span class="bolt">ϟ</span><div><small>Pickup Time</small><strong>${sec} second${sec===1?'':'s'} · ${ok?'Within Target':'Over Target'}</strong><em>PH stamp → UTC automatically · Target: ≤ ${TARGET} seconds</em></div></div>`;
  return sec;
 }
 window.calculatePickup=calculate;
-['input','change'].forEach(ev=>{stamp.addEventListener(ev,calculate,{passive:true});answer.addEventListener(ev,calculate,{passive:true})});
-answer.addEventListener('paste',()=>queueMicrotask(calculate));stamp.addEventListener('paste',()=>queueMicrotask(calculate));
+['input','change','blur'].forEach(ev=>{stamp.addEventListener(ev,calculate,{passive:true});answer.addEventListener(ev,calculate,{passive:true})});
+stamp.addEventListener('paste',()=>setTimeout(calculate,0));answer.addEventListener('paste',()=>setTimeout(calculate,0));
 queueMicrotask(calculate);
 })();
