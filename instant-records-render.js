@@ -1,5 +1,5 @@
 (()=>{'use strict';
-const KEY='premiumTicketTracker.v1';
+const KEY='premiumTicketTracker.v1',PAGE_SIZE=10;
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const statusColor=s=>({'Open':'#39a7e8','Pending':'#f7b916','On Hold':'#ef4c4c','Solved':'#16b86c','Closed':'#728296','Merged':'#7c3aed'}[s]||'#728296');
@@ -8,15 +8,13 @@ function parse(v){const m=String(v||'').match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2
 function days(a,b){a=parse(a);b=parse(b);return !a||!b||b<a?'—':`${((b-a)/86400000).toFixed(2)} days`}
 function read(){try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch{return[]}}
 function filtered(list){const q=($('searchInput')?.value||'').trim().toLowerCase(),type=$('typeFilter')?.value||'',status=$('statusFilter')?.value||'';return list.filter(t=>(!q||String(t.number||'').toLowerCase().includes(q))&&(!type||t.callType===type)&&(!status||t.status===status))}
-function row(t,i){const pickup=t.pickupSeconds==null?'—':`${t.pickupSeconds} sec`,pickupBg=t.pickupSeconds==null?'#eef2f6':t.pickupSeconds<=20?'#d9f8e7':'#ffe1df';return `<tr><td>${i+1}</td><td><b>${esc(t.number)}</b></td><td><span class="type-pill" style="background:${typeColor(t.callType)}20;color:${typeColor(t.callType)}">${esc(t.callType)}</span></td><td>${esc(t.creation||'—')}</td><td><span class="status-pill" style="background:${statusColor(t.status)};color:#fff">${esc(t.status)}</span></td><td>${esc(t.solvedTime||'—')}</td><td>${esc(t.expectedClose||'—')}</td><td>${esc(t.closedTime||'—')}</td><td><b>${t.closedTime?days(t.creation,t.closedTime):'—'}</b></td><td><span class="pickup-pill" style="background:${pickupBg}">${pickup}</span></td><td><button class="action-btn edit" onclick="editTicket('${esc(t.id)}')">✎</button><button class="action-btn view" onclick="viewTicket('${esc(t.id)}')">◉</button><button class="action-btn delete" onclick="deleteTicket('${esc(t.id)}')">×</button></td></tr>`}
-function renderRecords(list=read()){
- const body=$('ticketTableBody');if(!body)return;
- const rows=filtered(list);body.innerHTML=rows.map(row).join('');
- const empty=$('emptyState');if(empty)empty.style.display=rows.length?'none':'block';
- window.dispatchEvent(new CustomEvent('ticket-records-rendered',{detail:{count:rows.length}}));
-}
-function sync(e){const list=Array.isArray(e?.detail?.tickets)?e.detail.tickets:read();renderRecords(list)}
-window.addEventListener('ticket-record-saved',sync);
-window.addEventListener('ticket-data-updated',e=>{if(e.detail?.source==='inbound-save')sync(e)});
-window.instantRenderTicketRecords=renderRecords;
+function row(t,i){const pickup=t.pickupSeconds==null?'—':`${t.pickupSeconds} sec`,pickupBg=t.pickupSeconds==null?'#eef2f6':t.pickupSeconds<=20?'#d9f8e7':'#ffe1df';return `<tr data-ticket-id="${esc(t.id)}"><td>${i+1}</td><td><b>${esc(t.number)}</b></td><td><span class="type-pill" style="background:${typeColor(t.callType)}20;color:${typeColor(t.callType)}">${esc(t.callType)}</span></td><td>${esc(t.creation||'—')}</td><td><span class="status-pill" style="background:${statusColor(t.status)};color:#fff">${esc(t.status)}</span></td><td>${esc(t.solvedTime||'—')}</td><td>${esc(t.expectedClose||'—')}</td><td>${esc(t.closedTime||'—')}</td><td><b>${t.closedTime?days(t.creation,t.closedTime):'—'}</b></td><td><span class="pickup-pill" style="background:${pickupBg}">${pickup}</span></td><td><button class="action-btn edit" onclick="editTicket('${esc(t.id)}')">✎</button><button class="action-btn view" onclick="viewTicket('${esc(t.id)}')">◉</button><button class="action-btn delete" onclick="deleteTicket('${esc(t.id)}')">×</button></td></tr>`}
+let all=read(),page=1,frame=0,last='';
+function ensureNav(){const panel=document.querySelector('.records-panel');if(!panel)return null;let nav=$('ticketPagination');if(nav)return nav;nav=document.createElement('div');nav.id='ticketPagination';nav.className='ticket-pagination';nav.innerHTML='<span id="ticketPageInfo"></span><div class="ticket-page-actions"><button type="button" class="ticket-page-btn" id="ticketPrev">‹ Previous</button><span class="ticket-page-number" id="ticketPageNumber"></span><button type="button" class="ticket-page-btn" id="ticketNext">Next ›</button></div>';panel.insertBefore(nav,$('emptyState')||null);nav.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const max=Math.max(1,Math.ceil(filtered(all).length/PAGE_SIZE));if(b.id==='ticketPrev')page=Math.max(1,page-1);if(b.id==='ticketNext')page=Math.min(max,page+1);render(true)});return nav}
+function render(force=false){const body=$('ticketTableBody');if(!body)return;const rows=filtered(all),pages=Math.max(1,Math.ceil(rows.length/PAGE_SIZE));page=Math.min(page,pages);const start=(page-1)*PAGE_SIZE,visible=rows.slice(start,start+PAGE_SIZE),sig=visible.map(t=>`${t.id}|${t.status}|${t.number}|${t.callAttempts||0}|${t.stampedTime||''}|${t.closedTime||''}`).join('~')+`|${rows.length}|${page}`;if(force||sig!==last){last=sig;body.innerHTML=visible.map((t,i)=>row(t,start+i)).join('');window.dispatchEvent(new CustomEvent('ticket-records-rendered',{detail:{count:rows.length,visible:visible.length}}))}const empty=$('emptyState');if(empty)empty.style.display=rows.length?'none':'block';const nav=ensureNav();if(nav){nav.style.display=rows.length?'flex':'none';$('ticketPageInfo').textContent=rows.length?`Showing ${start+1}–${Math.min(start+PAGE_SIZE,rows.length)} of ${rows.length} tickets`:'Showing 0 tickets';$('ticketPageNumber').textContent=`Page ${page} / ${pages}`;$('ticketPrev').disabled=page<=1;$('ticketNext').disabled=page>=pages}}
+function schedule(reset=false){if(reset)page=1;if(frame)return;frame=requestAnimationFrame(()=>{frame=0;render()})}
+function setData(list,reset=false){all=Array.isArray(list)?list:read();schedule(reset)}
+window.addEventListener('ticket-record-saved',e=>setData(e.detail?.tickets));window.addEventListener('ticket-live-sync',()=>setData(read()));window.addEventListener('call-attempt-updated',()=>setData(read()));['searchInput','typeFilter','statusFilter'].forEach(id=>$(id)?.addEventListener(id==='searchInput'?'input':'change',()=>schedule(true),{passive:true}));
+window.instantRenderTicketRecords=list=>{if(Array.isArray(list))all=list;render(true)};window.ticketFastPageRender=true;
+render(true);
 })();
