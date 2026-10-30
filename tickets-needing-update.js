@@ -1,0 +1,7 @@
+(()=>{'use strict';
+const ACTIVE=new Set(['open','pending','on hold']);
+function getTickets(){try{const a=JSON.parse(localStorage.getItem('premiumTicketTracker.v1')||'[]');return Array.isArray(a)?a:[]}catch{return[]}}
+function ensure(){const host=document.querySelector('.metric-grid');if(!host||document.getElementById('ticketsNeedingUpdateMetric'))return;const old=document.getElementById('closingRecovery')?.parentElement;if(old)old.style.display='none';const box=document.createElement('div');box.className='metric';box.id='ticketsNeedingUpdateMetric';box.innerHTML='<small>Tickets Needing Update</small><strong id="ticketsNeedingUpdate">0</strong><em id="ticketsNeedingUpdateSub">Open 0 · Pending 0 · On Hold 0</em>';host.appendChild(box)}
+function render(){ensure();const data=getTickets(),c={open:0,pending:0,'on hold':0};data.forEach(t=>{const s=String(t.status||'').trim().toLowerCase();if(ACTIVE.has(s))c[s]++});const total=c.open+c.pending+c['on hold'];const n=document.getElementById('ticketsNeedingUpdate'),sub=document.getElementById('ticketsNeedingUpdateSub');if(n)n.textContent=String(total);if(sub)sub.textContent=`Open ${c.open} · Pending ${c.pending} · On Hold ${c['on hold']}`}
+let f=0;function schedule(){if(f)return;f=requestAnimationFrame(()=>{f=0;render()})}render();['ticket-records-rendered','ticket-ui-updated','ticket-data-updated','firebase-memory-write','call-attempt-updated','tracker-view-changed'].forEach(e=>window.addEventListener(e,schedule));window.addEventListener('storage',schedule);
+})();
