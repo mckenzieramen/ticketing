@@ -4,7 +4,10 @@ const svg=n=>paths[n]?`<svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="tru
 function setOnce(el,n){if(!el||el.dataset.iconName===n||!paths[n])return;el.dataset.iconName=n;el.innerHTML=svg(n)}
 function apply(){document.querySelectorAll('.header-chip .chip-icon').forEach((e,i)=>setOnce(e,i?'clock':'calendar'));const titles=document.querySelectorAll('.panel-title>span');['ticket','stamp','details','records','chart','status','swap'].forEach((n,i)=>setOnce(titles[i],n));const stamp=document.getElementById('stampBtn');if(stamp&&!stamp.dataset.ico){stamp.dataset.ico='1';stamp.innerHTML=svg('clock')+'<span>STAMP TIME</span>'}setOnce(document.getElementById('copyStamp'),'copy');const save=document.getElementById('saveStampBtn');if(save&&!save.dataset.ico){save.dataset.ico='1';save.innerHTML=svg('save')+'<span>Save Stamp</span>'}document.querySelectorAll('.bolt').forEach(e=>setOnce(e,'bolt'));document.querySelectorAll('.action-btn.edit').forEach(e=>{setOnce(e,'edit');e.title='Edit ticket';e.setAttribute('aria-label','Edit ticket')});document.querySelectorAll('.action-btn.view').forEach(e=>{setOnce(e,'eye');e.title='View ticket';e.setAttribute('aria-label','View ticket')});document.querySelectorAll('.action-btn.delete').forEach(e=>{setOnce(e,'trash');e.title='Delete ticket';e.setAttribute('aria-label','Delete ticket')})}
 let frame=0;function schedule(){if(frame)return;frame=requestAnimationFrame(()=>{frame=0;apply()})}
-apply();
-// Event-driven only. No document-wide MutationObserver and no duplicate module imports.
-['ticket-records-rendered','call-attempt-updated','ticket-ui-updated'].forEach(n=>window.addEventListener(n,schedule));
+apply();['ticket-records-rendered','call-attempt-updated','ticket-ui-updated'].forEach(n=>window.addEventListener(n,schedule));
+// Legacy app.js can redraw Ticket Records after a change. If that happens,
+// immediately restore the enhanced table (dropdown, attempts, actions) from current data.
+const body=document.getElementById('ticketTableBody');let repairFrame=0,repairing=false;
+function repair(){if(repairFrame||repairing)return;repairFrame=requestAnimationFrame(()=>{repairFrame=0;if(typeof window.instantRenderTicketRecords!=='function')return;const rows=[...body.rows];const legacy=rows.length&&rows.some(r=>!r.dataset.ticketId||!r.querySelector('.all-ticket-status')||!r.querySelector('.attempt-wrap')||!r.querySelector('.ticket-actions-wrap'));if(!legacy)return;repairing=true;try{const data=JSON.parse(localStorage.getItem('premiumTicketTracker.v1')||'[]');window.instantRenderTicketRecords(Array.isArray(data)?data:[])}catch{}finally{queueMicrotask(()=>{repairing=false})}})}
+if(body)new MutationObserver(repair).observe(body,{childList:true});
 })();
