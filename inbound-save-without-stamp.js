@@ -5,6 +5,8 @@ const pad=n=>String(n).padStart(2,'0');
 const fmt=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 const clean=v=>String(v||'').trim().replace(/\s*UTC\s*$/i,'').replace('T',' ').replace(/\s+/g,' ');
 const phToUTC=v=>{let s=clean(v).replace(/^2026-\s*/,'');const m=s.match(/^(\d{2})-(\d{2})\s+(\d{2}):(\d{2}):(\d{2})$/);if(!m)return'';const d=new Date(Date.UTC(2026,+m[1]-1,+m[2],+m[3]-8,+m[4],+m[5]));return `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}`};
+const parseUTC=v=>{const m=clean(v).match(/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/);return m?Date.UTC(+m[1],+m[2]-1,+m[3],+m[4],+m[5],+m[6]):null};
+const calcPickup=(callUTC,answerUTC)=>{const a=parseUTC(callUTC),b=parseUTC(answerUTC);if(a==null||b==null||b<a)return null;return Math.max(0,Math.round((b-a)/1000)-60)};
 const read=()=>{try{const x=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(x)?x:[]}catch{return[]}};
 const write=t=>{localStorage.setItem(KEY,JSON.stringify(t));window.dispatchEvent(new CustomEvent('ticket-record-saved',{detail:{tickets:t,source:'inbound-flex-save'}}))};
 const toast=msg=>{const el=document.getElementById('toast');if(!el)return;el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1800)};
@@ -23,17 +25,15 @@ btn.addEventListener('click',e=>{
  const now=fmt(new Date()),answerUTC=answerRaw?clean(answerRaw):'',timeOfCallUTC=timeOfCallPH?phToUTC(timeOfCallPH):'';
  if(timeOfCallPH&&!timeOfCallUTC){toast('Use a valid PH Time of call: 2026-MM-DD HH:mm:ss');return}
  let pickup=null;
- if(timeOfCallPH&&answerRaw&&typeof window.calculatePickup==='function'){
-   const sec=window.calculatePickup();
-   if(sec!==null&&Number.isFinite(Number(sec)))pickup=Number(sec);
- }
+ if(timeOfCallUTC&&answerUTC)pickup=calcPickup(timeOfCallUTC,answerUTC);
  const lifecycle=life(t,status,now);
- const creation=clean(timeOfCallPH)||t?.creation||now;
- if(!t){t={id:crypto.randomUUID(),number,callType:'Inbound Call',creation,status,...lifecycle,pickupSeconds:pickup,timeOfCallPH:clean(timeOfCallPH),timeOfCallUTC,answerTime:answerUTC,stampOnly:false};tickets.unshift(t)}
- else{Object.assign(t,{number,callType:'Inbound Call',status,...lifecycle,timeOfCallPH:timeOfCallPH?clean(timeOfCallPH):(t.timeOfCallPH||''),timeOfCallUTC:timeOfCallUTC||(t.timeOfCallUTC||''),answerTime:answerUTC||t.answerTime||'',pickupSeconds:pickup??t.pickupSeconds??null,stampOnly:false});if(timeOfCallPH)t.creation=clean(timeOfCallPH);else if(!t.creation)t.creation=creation}
+ // Ticket Creation is when the ticket record was saved/created. Time of call is kept separately.
+ const ticketCreation=t?.ticketCreation||t?.creation||now;
+ if(!t){t={id:crypto.randomUUID(),number,callType:'Inbound Call',creation:now,ticketCreation:now,status,...lifecycle,pickupSeconds:pickup,timeOfCallPH:clean(timeOfCallPH),timeOfCallUTC,answerTime:answerUTC,stampOnly:false};tickets.unshift(t)}
+ else{Object.assign(t,{number,callType:'Inbound Call',status,...lifecycle,ticketCreation,creation:ticketCreation,timeOfCallPH:timeOfCallPH?clean(timeOfCallPH):(t.timeOfCallPH||''),timeOfCallUTC:timeOfCallUTC||(t.timeOfCallUTC||''),answerTime:answerUTC||t.answerTime||'',pickupSeconds:pickup??t.pickupSeconds??null,stampOnly:false})}
  write(tickets);clear();
- if(timeOfCallPH&&answerRaw&&pickup!==null)toast('Inbound saved. PH Time of call converted to UTC and Pickup Time calculated.');
- else if(timeOfCallPH)toast('Inbound saved. PH Time of call converted to UTC.');
+ if(timeOfCallPH&&answerRaw&&pickup!==null)toast(`Inbound saved. Pickup Time: ${pickup} seconds.`);
+ else if(timeOfCallPH)toast('Inbound saved. PH Time of call stored separately from Ticket Creation.');
  else toast('Inbound information saved.');
 },true);
 })();
