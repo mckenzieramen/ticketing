@@ -8,22 +8,19 @@ let pendingId=null,pendingNumber='',lastTrigger=null;
 function read(){try{const v=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
 function hide(restoreFocus=true){modal.classList.remove('open');modal.setAttribute('aria-hidden','true');pendingId=null;pendingNumber='';if(restoreFocus&&lastTrigger&&document.contains(lastTrigger))lastTrigger.focus();lastTrigger=null}
 function show(id,number,trigger){if(!id)return;pendingId=String(id);pendingNumber=String(number||'');lastTrigger=trigger||null;document.getElementById('pdmTicket').textContent=number?`#${number}`:'Ticket record';modal.classList.add('open');modal.setAttribute('aria-hidden','false');requestAnimationFrame(()=>modal.querySelector('.pdm-cancel').focus())}
-function removeVisibleRows(number){if(!number)return;document.querySelectorAll('#ticketTableBody tr,#recentTicketsList tr').forEach(row=>{if(String(row.children[1]?.textContent||'').trim()===String(number).trim())row.remove()})}
-modal.querySelector('.pdm-cancel').addEventListener('click',()=>hide(true));modal.addEventListener('click',e=>{if(e.target===modal)hide(true)});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.classList.contains('open'))hide(true)});
-modal.querySelector('.pdm-delete').addEventListener('click',()=>{
- if(!pendingId)return;
- const id=String(pendingId),number=pendingNumber,before=read(),after=before.filter(x=>String(x.id)!==id);
- if(after.length===before.length){hide(false);return}
- hide(false);
- localStorage.setItem(KEY,JSON.stringify(after));
- removeVisibleRows(number);
- window.dispatchEvent(new CustomEvent('ticket-data-updated',{detail:{type:'delete',id,number,source:'premium-delete'}}));
+function removeVisibleRows(id,number){document.querySelectorAll('#ticketTableBody tr,#recentTicketsList tr').forEach(row=>{const rowId=String(row.dataset.ticketId||'');const rowNumber=String(row.children[1]?.textContent||'').trim();if((rowId&&rowId===String(id))||(!rowId&&number&&rowNumber===String(number).trim()))row.remove()})}
+function syncDelete(id,number){const before=read(),after=before.filter(x=>String(x.id)!==String(id));if(after.length===before.length)return false;
+ try{if(typeof tickets!=='undefined'&&Array.isArray(tickets)){tickets=tickets.filter(x=>String(x.id)!==String(id));localStorage.setItem(KEY,JSON.stringify(tickets));if(typeof render==='function')render()}else{localStorage.setItem(KEY,JSON.stringify(after))}}catch{localStorage.setItem(KEY,JSON.stringify(after))}
+ removeVisibleRows(id,number);
+ window.dispatchEvent(new CustomEvent('ticket-data-updated',{detail:{type:'delete',id:String(id),number:String(number||''),source:'premium-delete'}}));
+ window.dispatchEvent(new CustomEvent('ticket-record-deleted',{detail:{id:String(id),number:String(number||'')}}));
  window.dispatchEvent(new Event('call-attempt-updated'));
- // Keep the legacy app's in-memory list synchronized without reloading the page.
- try{if(typeof tickets!=='undefined'&&Array.isArray(tickets)){tickets=tickets.filter(x=>String(x.id)!==id);if(typeof render==='function')render()}}catch{}
-});
+ return true}
+modal.querySelector('.pdm-cancel').addEventListener('click',()=>hide(true));modal.addEventListener('click',e=>{if(e.target===modal)hide(true)});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.classList.contains('open'))hide(true)});
+modal.querySelector('.pdm-delete').addEventListener('click',()=>{if(!pendingId)return;const id=String(pendingId),number=pendingNumber;const deleted=syncDelete(id,number);hide(false);if(!deleted){try{toast('Ticket was already removed or could not be found.')}catch{}}else{try{toast('Ticket deleted.')}catch{}}});
 window.deleteTicket=id=>{const t=read().find(x=>String(x.id)===String(id));if(t)show(t.id,t.number)};
-function openFromButton(btn){const row=btn.closest('tr');if(!row)return;const number=row.children[1]?.textContent?.trim()||'';const data=read();let t=data.find(x=>String(x.number||'').trim()===number);if(!t){const inline=btn.getAttribute('onclick')||'';const m=inline.match(/deleteTicket\(['\"]([^'\"]+)['\"]\)/);if(m)t=data.find(x=>String(x.id)===m[1])}if(t)show(t.id,t.number,btn)}
+function exactIdFromButton(btn){const row=btn.closest('tr');if(row?.dataset.ticketId)return String(row.dataset.ticketId);if(btn.dataset.id)return String(btn.dataset.id);const inline=btn.getAttribute('onclick')||'';const m=inline.match(/deleteTicket\(['\"]([^'\"]+)['\"]\)/);return m?String(m[1]):''}
+function openFromButton(btn){const data=read(),id=exactIdFromButton(btn),row=btn.closest('tr');let t=id?data.find(x=>String(x.id)===id):null;if(!t){const number=String(row?.children?.[1]?.textContent||'').trim();const matches=data.filter(x=>String(x.number||'').trim()===number);if(matches.length===1)t=matches[0]}if(t)show(t.id,t.number,btn)}
 document.addEventListener('pointerdown',e=>{const btn=e.target.closest?.('.action-btn.delete');if(!btn)return;e.preventDefault();e.stopImmediatePropagation();openFromButton(btn)},true);
 document.addEventListener('click',e=>{const btn=e.target.closest?.('.action-btn.delete');if(!btn)return;e.preventDefault();e.stopImmediatePropagation();if(!modal.classList.contains('open'))openFromButton(btn)},true);
 })();
