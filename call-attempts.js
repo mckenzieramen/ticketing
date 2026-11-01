@@ -8,4 +8,6 @@ let frame=0;const schedule=()=>{if(frame)return;frame=requestAnimationFrame(()=>
 new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true});
 ['ticket-records-rendered','ticket-record-saved','ticket-ui-updated','ticket-data-updated','call-attempt-updated','ticket-live-sync'].forEach(n=>window.addEventListener(n,schedule));
 lockControls();
+// Stability layer: prevents the Ticket Records viewport from jumping while attempts/status rerender.
+if(!document.querySelector('script[data-ticket-stability]')){const s=document.createElement('script');s.src='stable-ticket-interactions.js?v=20261101-v1';s.dataset.ticketStability='1';document.body.appendChild(s)}
 })();
