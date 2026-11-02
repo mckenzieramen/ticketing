@@ -9,15 +9,23 @@ function apply(reason='delete-guard'){
  const d=deleted();if(!d.size)return false;
  const before=tickets(),after=before.filter(t=>!d.has(String(t?.id??'')));
  if(after.length===before.length)return false;
- applying=true;try{localStorage.setItem(TICKET_KEY,JSON.stringify(after))}finally{applying=false}
+ applying=true;
+ try{localStorage.setItem(TICKET_KEY,JSON.stringify(after))}
+ finally{applying=false}
  window.dispatchEvent(new CustomEvent('ticket-data-updated',{detail:{type:'delete-guard',reason}}));
  return true
 }
-function remember(id){id=String(id??'');if(!id)return;const d=deleted();d.add(id);save(d);apply('remember')}
+function remember(id){
+ id=String(id??'');if(!id)return;
+ const d=deleted();d.add(id);save(d);apply('remember')
+}
 window.addEventListener('ticket-record-deleted',e=>remember(e.detail?.id));
 window.addEventListener('ticket-live-sync',()=>setTimeout(()=>apply('firebase-live-sync'),0));
 window.addEventListener('firebase-data-saved',()=>setTimeout(()=>apply('firebase-data-saved'),0));
-window.addEventListener('ticket-data-updated',e=>{if(e.detail?.type!=='delete-guard')setTimeout(()=>apply('ticket-data-updated'),0)});
-document.addEventListener('DOMContentLoaded',()=>apply('startup'));
+window.addEventListener('ticket-data-updated',e=>{
+ if(e.detail?.type!=='delete-guard')setTimeout(()=>apply('ticket-data-updated'),0)
+});
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>apply('startup'));
+else apply('startup');
 window.PermanentTicketDeleteGuard={remember,apply,deletedIds:()=>[...deleted()]};
 })();
