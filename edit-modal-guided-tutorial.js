@@ -1,0 +1,26 @@
+(()=>{'use strict';
+const STYLE=`
+.atem-tutorial{display:none!important}
+#editGuideShade{position:fixed;inset:0;z-index:2147483648;background:rgba(7,18,35,.62);pointer-events:none}
+#editGuideSpot{position:fixed;z-index:2147483649;border:3px solid #3b82f6;border-radius:12px;box-shadow:0 0 0 6px rgba(59,130,246,.22),0 0 28px rgba(59,130,246,.3);pointer-events:none;transition:.18s ease}
+#editGuideCard{position:fixed;z-index:2147483650;width:min(390px,calc(100vw - 28px));background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 22px 70px rgba(15,23,42,.36);padding:17px;font-family:Inter,system-ui,sans-serif}
+#editGuideCard .eg-label{font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#2563eb;margin-bottom:5px}#editGuideCard h3{margin:0 0 5px;color:#172033;font-size:18px}#editGuideCard .eg-fn{display:inline-flex;padding:5px 8px;border-radius:7px;background:#eff6ff;color:#1d4ed8;font-size:11px;font-weight:800;margin-bottom:8px}#editGuideCard p{margin:0;color:#5f6f82;font-size:12px;line-height:1.55}#editGuideCard .eg-foot{display:flex;align-items:center;gap:7px;margin-top:13px}#editGuideCard .eg-count{margin-right:auto;color:#94a3b8;font-size:11px;font-weight:700}#editGuideCard button{border:0;border-radius:9px;padding:8px 11px;font-weight:800;cursor:pointer}#egBack{background:#eef2f7;color:#475569}#egSkip{background:transparent;color:#64748b}#egNext{background:#2563eb;color:#fff}
+`;
+const steps=[
+['#atemNumber','Ticket Number','Identify the ticket','Ito ang exact ticket number ng record na ine-edit.'],
+['#atemType','Call Type','Choose Inbound or Outbound','Kapag Inbound, bubukas ang Time of call (PH) at Started at / Answer Time (UTC). Kapag Outbound, automatic silang gray at disabled.'],
+['#atemCreation','Ticket Creation','Copy Ticket Creation Time','I-copy dito ang Ticket Creation Time mula sa ticket record. Huwag gamitin ang Ticket Close Time sa field na ito.'],
+['#atemClosed','Actual Closed Time','Copy Ticket Close Time','I-copy dito ang Ticket Close Time mula sa ticket record. Ito ang actual closing timestamp ng ticket.'],
+['#atemTimeOfCall','Time of call (PH)','Inbound only','Para sa Inbound ticket, ilagay dito ang pinakaunang Time of Call sa PH time. Disabled ito kapag Outbound.'],
+['#atemAnswer','Started at / Answer Time (UTC)','Inbound only','Para sa Inbound ticket, ilagay dito ang Started at / Answer Time in UTC mula sa inbound call details. Disabled ito kapag Outbound.'],
+['#atemPickup','Pickup Time','Automatic calculation','Automatic itong kino-compute para sa Inbound ticket gamit ang dalawang call timestamps.'],
+['#allTicketEditModal .atem-save','Save Changes','Apply the update','Kapag tama na lahat ng details, i-click ang Save Changes para ma-update ang existing ticket.']
+];
+let idx=0,shade,spot,card;
+function inject(){if(document.getElementById('editGuideStyle'))return;const s=document.createElement('style');s.id='editGuideStyle';s.textContent=STYLE;document.head.appendChild(s)}
+function end(){shade?.remove();spot?.remove();card?.remove();shade=spot=card=null}
+function place(){const el=document.querySelector(steps[idx][0]);if(!el)return;const r=el.getBoundingClientRect(),pad=7;spot.style.left=Math.max(4,r.left-pad)+'px';spot.style.top=Math.max(4,r.top-pad)+'px';spot.style.width=(r.width+pad*2)+'px';spot.style.height=(r.height+pad*2)+'px';const [,title,fn,text]=steps[idx];card.querySelector('h3').textContent=title;card.querySelector('.eg-fn').textContent='Function: '+fn;card.querySelector('p').textContent=text;card.querySelector('.eg-count').textContent=`${idx+1} / ${steps.length}`;card.querySelector('#egBack').style.visibility=idx?'visible':'hidden';card.querySelector('#egNext').textContent=idx===steps.length-1?'Done':'Next';card.style.visibility='hidden';card.style.left='14px';card.style.top='14px';const cr=card.getBoundingClientRect();let left=Math.max(14,Math.min(innerWidth-cr.width-14,r.left));let top=r.bottom+22;if(top+cr.height>innerHeight-14)top=Math.max(14,r.top-cr.height-22);card.style.left=left+'px';card.style.top=top+'px';card.style.visibility='visible'}
+function show(){const el=document.querySelector(steps[idx][0]);if(!el){idx++;if(idx<steps.length)return show();return end()}el.scrollIntoView({block:'center',behavior:'smooth'});setTimeout(place,180)}
+function start(){end();inject();idx=0;shade=document.createElement('div');shade.id='editGuideShade';spot=document.createElement('div');spot.id='editGuideSpot';card=document.createElement('div');card.id='editGuideCard';card.innerHTML='<div class="eg-label">Edit Ticket Record · Guided Tutorial</div><h3></h3><div class="eg-fn"></div><p></p><div class="eg-foot"><span class="eg-count"></span><button id="egSkip">Skip</button><button id="egBack">Back</button><button id="egNext">Next</button></div>';document.body.append(shade,spot,card);card.querySelector('#egSkip').onclick=end;card.querySelector('#egBack').onclick=()=>{if(idx){idx--;show()}};card.querySelector('#egNext').onclick=()=>{if(idx>=steps.length-1)return end();idx++;show()};show()}
+document.addEventListener('click',e=>{const q=e.target.closest?.('#allTicketEditModal .atem-q');if(!q)return;e.preventDefault();e.stopImmediatePropagation();start()},true);window.addEventListener('resize',()=>{if(card)place()});inject();
+})();
