@@ -13,3 +13,4 @@ window.addEventListener('offline',()=>state('Offline','Changes waiting','error')
 window.addEventListener('online',()=>state('Reconnecting…','Internet restored'));
 setTimeout(()=>{if(navigator.onLine)state('Firebase Live','Monitoring sync','saved');else state('Offline','Changes waiting','error')},1400);
 })();
+(()=>{if(document.querySelector('script[data-edit-guide]'))return;const s=document.createElement('script');s.src='edit-modal-guided-tutorial.js?v=20261102-guided-v1';s.dataset.editGuide='1';document.head.appendChild(s)})();
