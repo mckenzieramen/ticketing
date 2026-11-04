@@ -17,6 +17,34 @@ function markPresent(){
  const toast=document.getElementById('toast');
  if(toast){toast.textContent='Attendance marked as Present for today.';toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2200)}
 }
+
+function ensurePastAttendance(){
+ if(document.getElementById('pastAttendanceDialog'))return;
+ const dialog=document.createElement('dialog');dialog.id='pastAttendanceDialog';
+ dialog.innerHTML='<form id="pastAttendanceForm" style="display:grid;gap:14px"><h3 style="margin:0">Add Past Attendance</h3><p style="margin:0;color:#66758f">Choose a missed workday to mark as Present (Philippine time).</p><label for="pastAttendanceDate">Attendance date</label><input id="pastAttendanceDate" type="date" required><p id="pastAttendanceMessage" role="status" style="margin:0"></p><div style="display:flex;gap:10px"><button type="submit" class="primary">Mark as Present on This Date</button><button type="button" id="pastAttendanceCancel">Cancel</button></div></form>';
+ dialog.style.cssText='border:1px solid #dce7f1;border-radius:16px;padding:24px;width:min(420px,85vw);color:#153f63';
+ document.body.appendChild(dialog);
+ const input=dialog.querySelector('input'),message=dialog.querySelector('[role=status]');
+ const todayPH=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Manila',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+ function open(){input.max=todayPH();input.value='';message.textContent='';dialog.showModal();input.focus()}
+ for(const host of [document.getElementById('dashboardAttendanceAction')]){
+  if(!host)continue;
+  const button=document.createElement('button');button.type='button';button.title='Mark as Present on a Past Date';button.setAttribute('aria-label','Mark as Present on a Past Date');button.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 11h18m-14 5 3 3 6-6"/></svg>';button.style.cssText='display:inline-flex;align-items:center;justify-content:center;flex:0 0 38px;width:38px;height:36px;border:1px solid #1378c8;border-radius:8px;padding:8px 12px;background:#eef7ff;color:#125d96;cursor:pointer;font-weight:700';button.addEventListener('click',open);host.appendChild(button)
+ }
+ document.getElementById('pastAttendanceCancel').addEventListener('click',()=>dialog.close());
+ dialog.querySelector('form').addEventListener('submit',e=>{
+  e.preventDefault();const day=input.value;
+  const valid=/^\d{4}-\d{2}-\d{2}$/.test(day)&&!Number.isNaN(Date.parse(day+'T00:00:00Z'))&&new Date(day+'T00:00:00Z').toISOString().slice(0,10)===day;
+  if(!valid||day>=todayPH()){message.textContent='Please choose a valid date before today.';return}
+  const entries=attendanceEntries();
+  if(entries.some(x=>String(typeof x==='string'?x:(x?.date||x?.day||x?.key||'')).slice(0,10)===day)){message.textContent='This date is already marked as Present.';return}
+  try{localStorage.setItem(ATTENDANCE_KEY,JSON.stringify([...entries,day]))}catch{message.textContent='Unable to record attendance. Please try again.';return}
+  window.dispatchEvent(new CustomEvent('attendance-updated',{detail:{date:day}}));
+  window.dispatchEvent(new CustomEvent('ticket-data-updated'));render();dialog.close();
+  const toast=document.getElementById('toast');if(toast){toast.textContent='Present recorded for '+day+'.';toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2200)}
+ });
+}
+
 function attemptCount(t){if(Array.isArray(t?.callAttemptHistory)&&t.callAttemptHistory.length)return t.callAttemptHistory.length;const n=Number(t?.callAttempts);return Number.isFinite(n)&&n>0?n:0}
 function activeView(){return document.documentElement.dataset.trackerView||document.querySelector('main.container>.premium-tabs button.active[data-view]')?.dataset.view||'dashboard'}
 function bindMainAttendanceButton(){const btn=document.getElementById('attendanceBtn');if(!btn||btn.dataset.attendanceFixed==='1')return;btn.dataset.attendanceFixed='1';btn.addEventListener('click',e=>{e.preventDefault();markPresent()})}
@@ -26,6 +54,6 @@ function ensureStyle(){if(document.getElementById('dashboardAttendanceMetricsSty
 function syncVisibility(view=activeView()){const dashboard=view==='dashboard',action=ensureAttendanceAction(),metrics=ensureMetrics();if(action){action.hidden=!dashboard;action.style.setProperty('display',dashboard?'flex':'none','important')}if(metrics){metrics.hidden=!dashboard;metrics.style.setProperty('display',dashboard?'grid':'none','important')}}
 function renderMainAttendance(days){const btn=document.getElementById('attendanceBtn'),text=document.getElementById('attendanceBtnText'),note=document.getElementById('attendanceNote'),count=document.getElementById('attendanceHistoryCount'),list=document.getElementById('attendanceHistoryList'),daysEl=document.getElementById('attendanceDays');const present=presentToday();if(btn){btn.disabled=present;btn.classList.toggle('present',present)}if(text)text.textContent=present?'Present Today':'Mark Attendance Today';if(note)note.textContent=present?'Attendance for today has been recorded.':'Click once per workday to count your attendance.';if(count)count.textContent=`${days} day${days===1?'':'s'}`;if(daysEl)daysEl.textContent=`${days} day${days===1?'':'s'}`;if(list){const dates=[...new Set(attendanceEntries().map(x=>typeof x==='string'?x:(x?.date||x?.day||x?.key)).filter(Boolean).map(x=>String(x).slice(0,10)))].sort().reverse();list.textContent=dates.length?dates.join(' · '):'No attendance recorded yet.'}}
 function renderAttendance(days){const wrap=ensureAttendanceAction(),btn=document.getElementById('dashboardAttendanceBtn'),total=document.getElementById('dashboardAttendanceTotal');if(!wrap||!btn||!total)return;total.textContent=`${days} day${days===1?'':'s'} total`;const present=presentToday();wrap.classList.toggle('present',present);if(present){btn.textContent='✓ Present';btn.classList.add('present');btn.disabled=true}else{btn.textContent='✓ Mark as Present';btn.classList.remove('present');btn.disabled=false}}
-function render(){ensureStyle();bindMainAttendanceButton();const box=ensureMetrics();if(!box)return;const tickets=read(TICKET_KEY,[]),days=attendanceCount(),totalTickets=Array.isArray(tickets)?tickets.length:0,totalCallAttempts=Array.isArray(tickets)?tickets.reduce((sum,t)=>sum+attemptCount(t),0):0,ticketAvg=days?totalTickets/days:null,attemptAvg=days?totalCallAttempts/days:null;document.getElementById('dashboardTicketsPerAttendance').textContent=ticketAvg==null?'—':ticketAvg.toFixed(2);document.getElementById('dashboardAttemptsPerAttendance').textContent=attemptAvg==null?'—':attemptAvg.toFixed(2);document.getElementById('dashboardTicketsAttendanceSub').textContent=`${totalTickets} tickets ÷ ${days} attendance`;document.getElementById('dashboardAttemptsAttendanceSub').textContent=`${totalCallAttempts} call attempts ÷ ${days} attendance`;renderAttendance(days);renderMainAttendance(days);syncVisibility(activeView())}
+function render(){ensureStyle();bindMainAttendanceButton();const box=ensureMetrics();if(!box)return;const tickets=read(TICKET_KEY,[]),days=attendanceCount(),totalTickets=Array.isArray(tickets)?tickets.length:0,totalCallAttempts=Array.isArray(tickets)?tickets.reduce((sum,t)=>sum+attemptCount(t),0):0,ticketAvg=days?totalTickets/days:null,attemptAvg=days?totalCallAttempts/days:null;document.getElementById('dashboardTicketsPerAttendance').textContent=ticketAvg==null?'—':ticketAvg.toFixed(2);document.getElementById('dashboardAttemptsPerAttendance').textContent=attemptAvg==null?'—':attemptAvg.toFixed(2);document.getElementById('dashboardTicketsAttendanceSub').textContent=`${totalTickets} tickets ÷ ${days} attendance`;document.getElementById('dashboardAttemptsAttendanceSub').textContent=`${totalCallAttempts} call attempts ÷ ${days} attendance`;renderAttendance(days);renderMainAttendance(days);syncVisibility(activeView());ensurePastAttendance()}
 render();['ticket-data-updated','ticket-record-saved','call-attempt-updated','firebase-memory-write','firebase-data-saved','ticket-live-sync','attendance-updated'].forEach(name=>window.addEventListener(name,render));window.addEventListener('tracker-view-changed',e=>{const view=e.detail?.view||activeView();syncVisibility(view);if(view==='dashboard')render()});window.addEventListener('storage',e=>{if(!e.key||e.key===TICKET_KEY||e.key===ATTENDANCE_KEY)render()});
 })();
