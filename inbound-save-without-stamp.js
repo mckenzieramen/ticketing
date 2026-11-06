@@ -6,7 +6,7 @@ const fmt=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pa
 const clean=v=>String(v||'').trim().replace(/\s*UTC\s*$/i,'').replace('T',' ').replace(/\s+/g,' ');
 const phToUTC=v=>{let s=clean(v).replace(/^2026-\s*/,'');const m=s.match(/^(\d{2})-(\d{2})\s+(\d{2}):(\d{2}):(\d{2})$/);if(!m)return'';const d=new Date(Date.UTC(2026,+m[1]-1,+m[2],+m[3]-8,+m[4],+m[5]));return `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}`};
 const parseUTC=v=>{const m=clean(v).match(/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/);return m?Date.UTC(+m[1],+m[2]-1,+m[3],+m[4],+m[5],+m[6]):null};
-const calcPickup=(callUTC,answerUTC)=>{const a=parseUTC(callUTC),b=parseUTC(answerUTC);if(a==null||b==null||b<a)return null;return Math.max(0,Math.round((b-a)/1000)-60)};
+const calcPickup=(callUTC,answerUTC)=>{const a=parseUTC(callUTC),b=parseUTC(answerUTC);if(a==null||b==null||b<a)return null;return Math.round((b-a)/1000)};
 const read=()=>{try{const x=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(x)?x:[]}catch{return[]}};
 const write=t=>{localStorage.setItem(KEY,JSON.stringify(t));window.dispatchEvent(new CustomEvent('ticket-record-saved',{detail:{tickets:t,source:'inbound-flex-save'}}))};
 const toast=msg=>{const el=document.getElementById('toast');if(!el)return;el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1800)};

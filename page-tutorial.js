@@ -23,7 +23,7 @@ const tours={dashboard:[
 {target:'#stampTicket',title:'Inbound Ticket Number',fn:'Identify the inbound ticket',text:'Ilagay dito ang ticket number kapag available na. Ito ang magli-link sa pickup record sa tamang ticket.'},
 {target:'#answerTime',title:'Started at / Answer Time',fn:'Record when the call was answered',text:'Paste dito ang complete Started at timestamp in UTC. Ito ang second timestamp na kailangan para makuha ang pickup time.',html:callVisual},
 {target:'#stampStatus',title:'Inbound Status',fn:'Set the inbound ticket status',text:'Piliin ang current status ng inbound ticket. Ang status na ito ang lalabas sa ticket records at dashboard.'},
-{target:'#pickupResult',title:'Pickup Result',fn:'Automatically calculate response time',text:'Automatic itong kino-compute gamit ang: Started at UTC minus converted Time of Call UTC minus 60 seconds. Target ay 20 seconds or less.'},
+{target:'#pickupResult',title:'Pickup Result',fn:'Automatically calculate response time',text:'Automatic itong kino-compute gamit ang: Started at UTC minus converted Time of Call UTC. Target ay 20 seconds or less.'},
 {target:'#saveStampBtn',title:'Save Inbound Ticket',fn:'Save the inbound call record',text:'Kapag complete na ang available details, ito ang button para i-save ang inbound ticket at pickup information.'},
 {target:'#recentTicketsPanel',title:'Recent Tickets',fn:'Review your latest records',text:'Dito mabilis makikita ang latest tickets, status, pickup time, call attempts, at available actions.'},
 {target:'.premium-tabs button[data-view="tickets"]',title:'All Tickets Tab',fn:'Open complete ticket history',text:'Dito naman makikita at mama-manage ang lahat ng saved ticket records.',go:'tickets'}
