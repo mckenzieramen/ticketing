@@ -13,5 +13,5 @@ let frame=0,needsSync=false,lastRender='';function schedule(sync=false){needsSyn
 installTableGuard();
 ['ticket-record-saved','ticket-data-updated','ticket-ui-updated','ticket-records-rendered','firebase-memory-write','call-attempt-updated','tracker-view-changed'].forEach(n=>window.addEventListener(n,()=>schedule(true)));
 ['ticket-live-sync','firebase-data-saved'].forEach(n=>window.addEventListener(n,()=>schedule(true)));
-window.addEventListener('storage',e=>{if(!e.key||e.key===KEY)schedule(true)});window.addEventListener('pageshow',()=>schedule(true));render();setTimeout(()=>schedule(true),250);setTimeout(()=>schedule(true),1000);setTimeout(()=>schedule(true),2500);
+window.addEventListener('storage',e=>{if(!e.key||e.key===KEY)schedule(true)});window.addEventListener('pageshow',()=>schedule(true));schedule(true);
 })();
