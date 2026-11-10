@@ -1,8 +1,7 @@
 (()=>{'use strict';
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-const titles={dashboard:['Your support workspace.','A clear view of your tickets, calls, and daily performance.'],calls:['Make every conversation count.','Record inbound and outbound calls, and manage your latest tickets.'],tickets:['Your tickets, in focus.','Search, review, and update your ticket records in one place.']};
 let viewGeneration=0;
-function changeView(view){const pair=titles[view]||titles.dashboard;document.getElementById('workspaceHeading').textContent=pair[0];document.getElementById('workspaceDescription').textContent=pair[1];if(reduced)return;const generation=++viewGeneration;document.querySelectorAll('main.container>.premium-view-section:not(.premium-view-hidden),.workspace-grid:not(.premium-view-hidden)').forEach(el=>{el.classList.remove('premium-section-enter');requestAnimationFrame(()=>{if(generation===viewGeneration)el.classList.add('premium-section-enter')})})}
+function changeView(view){if(reduced)return;const generation=++viewGeneration;document.querySelectorAll('main.container>.premium-view-section:not(.premium-view-hidden),.workspace-grid:not(.premium-view-hidden)').forEach(el=>{el.classList.remove('premium-section-enter');requestAnimationFrame(()=>{if(generation===viewGeneration)el.classList.add('premium-section-enter')})})}
 window.addEventListener('tracker-view-changed',e=>changeView(e.detail?.view));
 changeView(document.documentElement.dataset.trackerView||'dashboard');
 // Animate only the initial dashboard counts. Later updates remain immediate and accurate.
