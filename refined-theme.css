@@ -196,3 +196,9 @@ html.records-compact body .records-panel th{padding-top:8px!important;padding-bo
 @keyframes records-shimmer{from{background-position:100% 0}to{background-position:-100% 0}}
 @media(max-width:600px){.records-skeleton>div{gap:9px}.record-save-status{padding:9px 14px}html body .density-toggle{padding:10px 8px;font-size:10px}}
 @media(prefers-reduced-motion:reduce){.records-skeleton span{animation:none}}
+
+/* Change tab text and its background together; never fade white text over white. */
+html body .premium-tabs button,html body .premium-tabs button span{animation:none!important;transition:none!important;opacity:1!important;visibility:visible!important;transform:none!important}
+html body .premium-tabs button:not(.active),html body .premium-tabs button:not(.active) span{color:#61766d!important}
+html body .premium-tabs button.active{color:#fff!important;background:#244e46!important}
+html body .premium-tabs button.active span{color:#fff!important;background:transparent!important}
