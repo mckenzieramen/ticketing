@@ -132,3 +132,7 @@ html body .records-spinner{border-color:#e0eadd;border-top-color:#5d8564}
 @media(min-width:761px) and (max-width:1400px){html body .stats-grid{grid-template-columns:repeat(4,minmax(0,1fr))}html body .stat{min-height:92px;padding:18px 20px}}
 @media(max-width:760px){.workspace-intro{padding:8px 2px 20px;gap:10px}.workspace-intro h2{font-size:25px;letter-spacing:-.8px}.workspace-intro p{font-size:11px}.workspace-intro-mark{width:48px;height:48px;flex-basis:48px;border-radius:15px}.workspace-intro-mark span{font-size:23px}.workspace-eyebrow{font-size:8px;letter-spacing:1.2px}html body .stat{min-height:92px}html body .metric:nth-child(2){border-right:0}html body .metric{padding:13px 12px}html body .metric-grid{gap:12px 0}html body .metric strong{font-size:23px}}
 @media(prefers-reduced-motion:reduce){.premium-section-enter,.premium-button-pulse{animation:none!important}html body .stat{transition:none}html body .stat:hover{transform:none}}
+
+/* Summary cards removed from every tab at the user's request. */
+html body main.container #statsGrid,
+html body main.container #dashboardAttendanceMetrics{display:none!important}
