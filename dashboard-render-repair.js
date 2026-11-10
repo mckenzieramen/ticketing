@@ -1,4 +1,5 @@
 (()=>{'use strict';
+if(window.ticketDashboardRendererReady)return;window.ticketDashboardRendererReady=true;
 const KEY='premiumTicketTracker.v1',STATUSES=['Open','Pending','On Hold','Solved','Closed','Merged'];
 const COLORS={Open:'#39a7e8',Pending:'#f7b916','On Hold':'#ef4c4c',Solved:'#16b86c',Closed:'#728296',Merged:'#7c3aed'};
 function parse(raw){try{const v=typeof raw==='string'?JSON.parse(raw):raw;return Array.isArray(v)?v:[]}catch{return[]}}
@@ -10,6 +11,7 @@ function render(){const tickets=read(),stats=document.getElementById('statsGrid'
  if(bars){const max=Math.max(1,...STATUSES.map(s=>tickets.filter(t=>t.status===s).length));bars.innerHTML=STATUSES.map(s=>{const n=tickets.filter(t=>t.status===s).length;return `<div class="bar-row"><span>${s}</span><div class="bar"><i style="width:${n/max*100}%;background:${COLORS[s]}"></i></div><b>${n}</b></div>`}).join('')}
  const donut=document.getElementById('ioDonut'),totalEl=document.getElementById('ioTotal'),legend=document.getElementById('ioLegend');if(donut&&totalEl&&legend){const inbound=tickets.filter(t=>t.callType==='Inbound Call').length,outbound=tickets.filter(t=>t.callType==='Outbound Call').length,total=inbound+outbound,pct=total?inbound/total*100:50;donut.style.background=`conic-gradient(#12b76a 0 ${pct}%,#7145e8 ${pct}% 100%)`;totalEl.textContent=total;legend.innerHTML=`<div><i style="background:#12b76a"></i>Inbound Calls — ${inbound}${total?` (${Math.round(inbound/total*100)}%)`:''}</div><div><i style="background:#7145e8"></i>Outbound Calls — ${outbound}${total?` (${Math.round(outbound/total*100)}%)`:''}</div>`}}
 let frame=0,needsSync=false,lastRender='';function schedule(sync=false){needsSync=needsSync||sync;if(frame)return;frame=requestAnimationFrame(()=>{frame=0;if(needsSync){needsSync=false;syncAppState()}const signature=JSON.stringify(read());if(signature===lastRender)return;lastRender=signature;render()})}
+window.refreshTicketDashboard=()=>schedule(true);
 installTableGuard();
 ['ticket-record-saved','ticket-data-updated','ticket-ui-updated','ticket-records-rendered','firebase-memory-write','call-attempt-updated','tracker-view-changed'].forEach(n=>window.addEventListener(n,()=>schedule(true)));
 ['ticket-live-sync','firebase-data-saved'].forEach(n=>window.addEventListener(n,()=>schedule(true)));
