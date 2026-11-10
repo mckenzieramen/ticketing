@@ -76,7 +76,7 @@ async function saveState(user,state=localState()){
  }finally{saving=false}
 }
 async function flushSave(user){if(!user||hydrating)return;pendingState=localState();if(saving){saveAgain=true;return}do{saveAgain=false;const state=pendingState;pendingState=null;try{await saveState(user,state)}catch(e){console.error(e);if(sync)sync.textContent='Firebase retry needed'}if(pendingState)saveAgain=true}while(saveAgain&&auth.currentUser?.uid===user.uid)}
-function queueSave(user){if(!user)return;clearTimeout(saveTimer);saveTimer=setTimeout(()=>{if(!auth.currentUser||auth.currentUser.uid!==user.uid)return;pendingState=localState();void flushSave(user)},120)}
+function queueSave(user){if(!user)return;clearTimeout(saveTimer);saveTimer=setTimeout(()=>{saveTimer=0;if(!auth.currentUser||auth.currentUser.uid!==user.uid)return;pendingState=localState();void flushSave(user)},120)}
 async function migrateIfNeeded(user){
  const canonical=await getDoc(stateRef(user));
  if(canonical.exists()){
@@ -106,6 +106,8 @@ async function loadAccount(user){
   const mergedDeleted=new Set([...cloudDeleted,...localDeleted]);
   const clean=sanitizeState({...state,[DELETED_KEY]:JSON.stringify([...mergedDeleted])});
   const serialized=serialize(clean);
+  // A snapshot from before the debounced/in-flight edit must not replace it.
+  if(saveTimer||saving||pendingState||saveAgain)return;
   if(serialized===lastSerialized)return;
   applyCache(user,clean);
   void saveState(user,localState()).catch(console.error);
