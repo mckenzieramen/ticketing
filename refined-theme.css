@@ -146,3 +146,22 @@ html body .records-panel .table-scroll{max-width:100%;width:100%;overscroll-beha
 @media(max-width:1050px){html body main.container>.premium-tabs{flex-wrap:wrap!important;position:relative!important;top:0!important}html body .dashboard-attendance-nav-action{min-width:0;flex-wrap:wrap;gap:8px}html body .stats-grid{grid-template-columns:repeat(4,minmax(0,1fr))}html body .records-head{flex-wrap:wrap}html body .filters{max-width:100%}html body .metric-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 0}html body .metric:nth-child(2){border-right:0}}
 @media(max-width:760px){html body .stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}html body .dashboard-attendance-nav-action{flex-basis:100%;justify-content:flex-end;padding:8px 4px 2px;border-top:1px solid #edf0eb}html body .attendance-metric-card{padding:16px;gap:10px}html body .records-head .filters{grid-template-columns:repeat(2,minmax(0,1fr))}html body .records-head .filters input{min-width:0}html body .tts-card{max-width:100%}html body .workspace-grid:not(.premium-view-hidden){grid-template-columns:minmax(0,1fr)}}
 @media(max-width:420px){html body main.container{padding:10px 8px 20px}html body .premium-tabs button{font-size:10px!important;padding:9px!important}html body .brand p{font-size:9px}html body .topbar{padding:14px 12px}html body .stat{padding:12px 10px;gap:8px}html body .stat-icon{width:28px!important;height:28px!important;flex-basis:28px}html body .stat small{white-space:normal;line-height:1.4}html body .attendance-metric-card strong{font-size:24px}html body .metric-grid{padding:14px 6px}html body .metric{padding:10px}html body .metric strong{font-size:21px}html body .panel-title{padding:15px}html body .records-head{padding:14px}}
+
+/* First paint always shows zero until the animation owns the real values. */
+html.metrics-pending #statsGrid .stat strong,
+html.metrics-pending #dashboardAttendanceMetrics .attendance-metric-card strong,
+html.metrics-pending .metric strong,
+html.metrics-pending .last5-metric b,
+html.metrics-pending .pickup-result strong,
+html.metrics-pending #statusBars .bar-row>b{position:relative;visibility:hidden}
+html.metrics-pending #statsGrid .stat strong::after,
+html.metrics-pending #dashboardAttendanceMetrics .attendance-metric-card strong::after,
+html.metrics-pending .metric strong::after,
+html.metrics-pending .last5-metric b::after,
+html.metrics-pending .pickup-result strong::after,
+html.metrics-pending #statusBars .bar-row>b::after{content:"0";position:absolute;inset:0;visibility:visible;color:inherit}
+html.metrics-pending #statusBars .bar>i{width:0!important}
+
+#statsGrid .stat strong,#dashboardAttendanceMetrics strong,.metric strong,.last5-metric b,#statusBars .bar-row>b{font-variant-numeric:tabular-nums; font-feature-settings:"tnum"}
+#statusBars .bar{contain:paint}
+#statusBars .bar>i{transform-origin:left center;transition:none!important}
