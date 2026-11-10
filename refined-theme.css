@@ -137,3 +137,12 @@ html body .records-spinner{border-color:#e0eadd;border-top-color:#5d8564}
 .premium-records-reveal{animation:premium-records-in .38s cubic-bezier(.2,.7,.3,1) both}
 @keyframes premium-records-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){.premium-records-reveal{animation:none!important}}
+/* Adapt to the available CSS viewport, including browser zoom. */
+html body main.container,html body .panel,html body .workspace-grid,html body .analytics-grid,html body .stat,html body .attendance-metric-card{min-width:0}
+html body .brand h1{font-size:clamp(16px,1.65vw,23px)}
+html body .stat strong{font-size:clamp(23px,2.1vw,29px)}
+html body .records-panel{max-width:100%}
+html body .records-panel .table-scroll{max-width:100%;width:100%;overscroll-behavior-x:contain}
+@media(max-width:1050px){html body main.container>.premium-tabs{flex-wrap:wrap!important;position:relative!important;top:0!important}html body .dashboard-attendance-nav-action{min-width:0;flex-wrap:wrap;gap:8px}html body .stats-grid{grid-template-columns:repeat(4,minmax(0,1fr))}html body .records-head{flex-wrap:wrap}html body .filters{max-width:100%}html body .metric-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 0}html body .metric:nth-child(2){border-right:0}}
+@media(max-width:760px){html body .stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}html body .dashboard-attendance-nav-action{flex-basis:100%;justify-content:flex-end;padding:8px 4px 2px;border-top:1px solid #edf0eb}html body .attendance-metric-card{padding:16px;gap:10px}html body .records-head .filters{grid-template-columns:repeat(2,minmax(0,1fr))}html body .records-head .filters input{min-width:0}html body .tts-card{max-width:100%}html body .workspace-grid:not(.premium-view-hidden){grid-template-columns:minmax(0,1fr)}}
+@media(max-width:420px){html body main.container{padding:10px 8px 20px}html body .premium-tabs button{font-size:10px!important;padding:9px!important}html body .brand p{font-size:9px}html body .topbar{padding:14px 12px}html body .stat{padding:12px 10px;gap:8px}html body .stat-icon{width:28px!important;height:28px!important;flex-basis:28px}html body .stat small{white-space:normal;line-height:1.4}html body .attendance-metric-card strong{font-size:24px}html body .metric-grid{padding:14px 6px}html body .metric{padding:10px}html body .metric strong{font-size:21px}html body .panel-title{padding:15px}html body .records-head{padding:14px}}
