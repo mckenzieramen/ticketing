@@ -1,204 +1,131 @@
-/* Ticket workspace: calm navy, clear hierarchy, and consistent surfaces. */
-:root{--bg:#f4f6fa;--text:#172b46;--muted:#748297;--line:#e4eaf2;--shadow:0 4px 22px rgba(24,47,79,.045);--navy:#142d50;--blue:#2563eb}
-html body{background:#f5f5f2;color:var(--text);font-size:13px;-webkit-font-smoothing:antialiased}
-html body .topbar{background:linear-gradient(115deg,#122a48,#1c3d63);min-height:94px;padding:20px 30px;box-shadow:none;border-bottom:1px solid #ffffff12}
-html body .brand h1{font-size:23px;letter-spacing:-.7px;font-weight:750}
-html body .brand p{font-size:11px;letter-spacing:.4px;color:#b8cce2;margin-top:6px}
-html body .brand-icon::before{animation:none}
-html body .header-right{gap:18px}.header-chip small,.profile small{opacity:.75}.header-chip strong{font-variant-numeric:tabular-nums}
-html body main.container{padding:24px 28px 36px;max-width:1680px}
-html body main.container>.premium-tabs{padding:7px!important;gap:5px!important;border-radius:14px!important;border:1px solid #e2e8f1!important;box-shadow:0 4px 16px #18315305!important;margin-bottom:22px!important;background:#fff!important;top:10px!important}
-html body .premium-tabs button{padding:11px 18px!important;border-radius:9px!important;font-size:12px!important;font-weight:650!important;color:#687a90!important}
-html body .premium-tabs button.active{background:#1e4678!important;box-shadow:0 3px 8px #173d6620!important;color:#fff!important}
-html body .premium-tabs button:not(.active):hover{background:#edf3fc!important;color:#24558f!important}
-html body .stats-grid{gap:12px;margin-bottom:18px}
-html body .stat{border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:17px 13px;gap:10px;align-items:center;min-height:88px}
-html body .stat-icon{width:34px;height:34px;flex:0 0 34px;border-radius:11px;font-size:16px;box-shadow:none}
-html body .stat small{font-size:10px;color:#78869a;font-weight:600}
-html body .stat strong{font-size:24px;font-weight:750;letter-spacing:-.8px;font-variant-numeric:tabular-nums;color:#1b3351;margin-top:5px}
-html body .panel{border-radius:16px;border-color:var(--line);box-shadow:var(--shadow)}
-html body .panel-title{background:#fff;color:#203b5f;padding:18px 20px;border-bottom:1px solid #edf0f5;font-size:13px;font-weight:750;letter-spacing:-.1px}
-html body .panel-title>span:first-child{color:#4978b2}
-html body .panel-body{padding:22px}
-html body .workspace-grid{gap:18px}
-html body .analytics-grid{gap:18px;margin-top:18px;grid-template-columns:minmax(0,1.65fr) minmax(230px,.8fr) minmax(210px,.7fr)}
-html body .metric-grid{padding:16px;gap:10px}
-html body .metric{border:1px solid #e5edf5;background:linear-gradient(155deg,#fff,#fafcff);border-radius:12px;padding:17px 12px;min-width:0}
-html body .metric small{font-size:10px;line-height:1.5;color:#64758a;font-weight:650}
-html body .metric strong{font-size:23px;letter-spacing:-.65px;font-variant-numeric:tabular-nums;line-height:1.2;margin-top:12px}
-html body .metric em{line-height:1.6;font-size:10px;margin-top:7px}
-html body .status-bars{padding:18px 20px}.bar-row{margin:12px 0;gap:10px}.bar{height:7px}
-html body .io-wrap{padding:22px 16px;gap:14px;flex-wrap:wrap;justify-content:center}
-html body .attendance-metric-card{border-color:var(--line);border-radius:14px;background:#fff;box-shadow:var(--shadow);padding:17px 20px}
-html body .attendance-metric-card small{font-size:9px;letter-spacing:.65px;font-weight:650}
-html body .attendance-metric-card strong{font-size:25px;letter-spacing:-.7px;font-variant-numeric:tabular-nums}
-html body .dashboard-attendance-nav-action button{background:#2563a8;border-radius:8px;font-weight:650}
-html body input,html body select{border-radius:9px;border-color:#dfe6ef;background:#fcfdff;min-height:40px;font-size:12px;padding:11px 13px;transition:border-color .16s,box-shadow .16s}
-html body input::placeholder{color:#9aa7b7}
-html body input:focus,html body select:focus{border-color:#5b8ad4;background:#fff;box-shadow:0 0 0 3px #2563eb12}
-html body input:disabled,html body select:disabled{background:#f0f3f7;color:#98a3b3}
-html body label{line-height:1.6;color:#52647b;font-weight:650}
-html body .primary{background:#2563a8;border-radius:9px;box-shadow:0 4px 9px #245c9b16;padding:13px;font-weight:650}
-html body .primary:hover{background:#1d518e}
-html body .stamp-btn{background:linear-gradient(110deg,#304eb0,#5a52c4);box-shadow:0 7px 18px #4a50ac24;border-radius:12px;font-size:18px}
-html body .dark-btn{background:#24456b;border-radius:8px;padding:11px 16px}
-html body .helper{line-height:1.65;color:#8290a2}
-html body .records-head{background:#fff;padding:20px;gap:16px;border-bottom:1px solid #e6edf4}
-html body .records-head .panel-title.flat{border:0;padding:0;color:#203b5f;font-size:15px}
-html body .filters{gap:8px;align-items:center;flex-wrap:wrap}
-html body .filters input{width:205px}.filters input,.filters select{border-color:#e1e8f1}
-html body .export-btn{color:#2d5f99;background:#edf4fd;border:1px solid #dce8f8;border-radius:8px;padding:11px 14px;white-space:nowrap}
-html body .records-panel .table-scroll thead th{background:#f7f9fc!important;color:#6e7f94!important;font-weight:650!important;font-size:9px!important;padding-top:12px!important;padding-bottom:12px!important;border-color:#e7edf4!important}
-html body .records-panel td{padding-top:10px!important;padding-bottom:10px!important;border-color:#e7edf4!important;color:#53667e!important;font-size:10px!important}
-html body .records-panel tbody td{background:linear-gradient(90deg,var(--status-soft),#fff 16px)!important}
-html body .records-panel tbody tr:hover td{background:#f5f9ff!important}
-html body .records-panel td:nth-child(2) b{color:#254c7d!important;font-weight:750}
+/* Ivory Minimal: the ticket workspace's single presentation theme. */
+:root{--ivory:#f8f5ee;--surface:#fffcf6;--forest:#173f31;--muted:#7f8879;--border:#ded7c8;--gold:#b49357;--shadow:0 5px 20px #5b4c2e08}
+html body{background:radial-gradient(ellipse at 15% 0%,#fffdf7,transparent 55%),var(--ivory);color:var(--forest);font-family:Inter,system-ui,sans-serif;font-size:13px;-webkit-font-smoothing:antialiased}
+html body .topbar{background:#fcfaf4;color:var(--forest);border-bottom:1px solid var(--border);min-height:86px;padding:18px 28px;box-shadow:0 3px 15px #574b2a05}
+html body .brand h1{font-size:clamp(17px,1.6vw,23px);font-weight:700;letter-spacing:-.65px;color:#173f31;text-shadow:none}
+html body .brand p{font-size:10px;color:#89907f;letter-spacing:.3px;margin-top:5px}
+html body .brand-icon{width:43px;height:43px;border-radius:12px;background:#f0ebdc;border:1px solid #e2d8bf;box-shadow:inset 0 1px 0 #fff;color:#28513d}
+html body .brand-icon::before,html body .brand-icon::after{display:none}
+html body .logo-mark{background:none;color:#28513d;filter:none;font-size:24px}
+html body .logo-ring{border-color:#c8ccb7;border-top-color:#617d53;border-right-color:#617d53}
+html body .logo-spark{background:#b8995d;box-shadow:0 0 0 3px #b8995d12}
+html body .header-right{gap:16px}.header-chip{border-right-color:#ded7c8}
+html body .header-chip small,html body .profile small{color:#8c927f;font-size:9px}
+html body .header-chip strong{color:#36513d;font-size:11px}
+html body .chip-icon{color:#748365}html body .avatar{background:#ece9dd;color:#31523a;border:1px solid #dfdccd;width:36px;height:36px}
+html body .profile strong{color:#32523d;font-size:12px}
+html body .tracker-sync-health{background:#f1f2e8;border-color:#e0e4d5;color:#4d6850}
+html body .tts-sync{color:#607550}html body .tts-logout{color:#536b4d;background:#f0f0e4;border-color:#dce1ce}
+html body main.container{padding:22px 28px 36px;max-width:1660px;min-width:0}
+html body main.container>.premium-tabs{background:#fffcf5!important;border:1px solid #e1d9c9!important;border-radius:12px!important;box-shadow:var(--shadow)!important;backdrop-filter:none!important;padding:6px!important;margin-bottom:20px!important;gap:5px!important;top:8px!important}
+html body .premium-tabs button[data-view]{font-size:11px!important;font-weight:650!important;padding:11px 17px!important;border-radius:8px!important;color:#65755e!important}
+html body .premium-tabs button[data-view],html body .premium-tabs button[data-view] span{animation:none!important;transition:none!important;opacity:1!important;visibility:visible!important;transform:none!important}
+html body .premium-tabs button[data-view]:not(.active),html body .premium-tabs button[data-view]:not(.active) span{color:#65755e!important}
+html body .premium-tabs button[data-view]:not(.active):hover{background:#f0efdf!important}
+html body .premium-tabs button[data-view].active{background:#21543a!important;color:#fff!important;box-shadow:0 3px 8px #284f3815!important}
+html body .premium-tabs button[data-view].active span{color:#fff!important;background:transparent!important}
+html body .stats-grid{gap:11px;margin-bottom:17px;grid-template-columns:repeat(8,minmax(0,1fr))}
+html body .stat{background:#fffcf6;border:1px solid #ddd7c8;border-radius:12px;padding:19px 13px;min-width:0;min-height:102px;gap:11px;box-shadow:var(--shadow);transition:box-shadow .18s,border-color .18s}
+html body .stat:first-child{background:linear-gradient(135deg,#fff6df,#f4e3be);border-color:#d9c293}
+html body .stat:hover{border-color:#b6bea5;box-shadow:0 7px 18px #5b4c2e0e}
+html body .stat-icon{background:transparent!important;color:#305740!important;box-shadow:none!important;border-radius:0!important;width:30px!important;height:32px!important;flex:0 0 30px;font-size:19px}
+html body .stat small{white-space:normal;line-height:1.5;font-size:10px;color:#456049;font-weight:650}
+html body .stat strong{font-size:clamp(23px,2vw,30px);font-weight:700;letter-spacing:-1px;color:#194b32;margin-top:4px}
+html body .panel,html body .attendance-metric-card,html body .last5-day{background:#fffcf6;border:1px solid var(--border);border-radius:15px;box-shadow:var(--shadow);min-width:0;backdrop-filter:none}
+html body .panel-title{background:transparent;color:#254a34;border-bottom:1px solid #e8e1d2;padding:18px 20px;font-size:13px;font-weight:750}
+html body .panel-title>span:first-child{color:#527146}
+html body .panel-body{padding:21px}
+html body .workspace-grid,html body .analytics-grid{gap:17px;min-width:0}
+html body .analytics-grid{grid-template-columns:minmax(0,1.5fr) minmax(250px,1fr) minmax(230px,.85fr);margin-top:18px}
+html body .metric-grid{gap:0;padding:18px 12px;grid-template-columns:repeat(4,minmax(0,1fr))}
+html body .metric{border:0;border-right:1px solid #e6e0d0;border-radius:0;background:transparent;padding:10px 13px;min-width:0}
+html body .metric:last-child{border-right:0}
+html body .metric small{font-size:9px;font-weight:650;color:#6a795f;line-height:1.6}
+html body .metric strong{font-size:23px;letter-spacing:-.7px;font-weight:700;margin-top:12px;line-height:1.25}
+html body .metric em{color:#8a917e;font-size:9px;line-height:1.65;margin-top:7px}
+html body .attendance-metric-card{padding:20px;background:linear-gradient(110deg,#fffdf8,#f8f4e8)}
+html body .attendance-metric-icon{background:#f2ecd9!important;border:1px solid #e5dcc3;color:#637a4a!important;box-shadow:none!important;border-radius:10px}
+html body .attendance-metric-card small{color:#697b57;font-size:9px;letter-spacing:.55px}
+html body .attendance-metric-card strong{color:#235237;font-size:28px;letter-spacing:-.8px;font-weight:700}
+html body .attendance-metric-card span{color:#939780;font-size:9px}
+html body .dashboard-attendance-nav-action{border-color:#e5decd}
+html body .dashboard-attendance-info span{color:#89937a}.dashboard-attendance-info strong{color:#546c44}
+html body .dashboard-attendance-nav-action button{background:#53794a;border-radius:8px;font-weight:650}
+html body input,html body select{background:#fffdf8;border:1px solid #dcd8c9;border-radius:8px;color:#365337;padding:11px 12px;font-size:12px;min-height:40px;transition:border-color .15s,box-shadow .15s}
+html body input::placeholder{color:#a1a48f}
+html body input:focus,html body select:focus{background:#fffefa;border-color:#82946b;box-shadow:0 0 0 3px #82946b14}
+html body input:disabled,html body select:disabled{background:#eeeade;color:#a2a18b}
+html body label{color:#627151;font-size:11px;font-weight:650;line-height:1.65}
+html body .primary,html body .dark-btn{background:#285b3d;border-radius:8px;color:white;border:0;padding:12px 16px;font-weight:650;box-shadow:0 3px 8px #285b3d10}
+html body .primary:hover,html body .dark-btn:hover{background:#1c462e}
+html body .stamp-btn{background:linear-gradient(110deg,#2f6544,#557b4a);border-radius:12px;box-shadow:0 8px 18px #53794a20;font-size:18px}
+html body .helper{color:#919782;line-height:1.65}
+html body .status-bars{padding:17px 20px}.bar-row{margin:11px 0;font-size:10px;gap:8px}
+html body .bar{height:8px;background:#ebece1;contain:paint}
+html body #statusBars .bar>i{transform-origin:left center;transition:none!important}
+.chart-group-heading{font-size:9px;color:#8a927b;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:0 0 10px}
+.chart-group-heading.ticket-status-heading{border-top:1px solid #e7e1d2;padding-top:16px;margin-top:17px}
+html body .call-volume-row{position:relative;grid-template-columns:90px 1fr;min-height:21px;margin:9px 0;outline:none}
+html body .call-volume-row>.call-bar-tooltip{position:absolute;right:0;bottom:calc(100% + 4px);z-index:20;background:#254b34;color:#fff;padding:7px 10px;border-radius:7px;box-shadow:0 4px 12px #203e301c;font-size:10px;white-space:nowrap;opacity:0;pointer-events:none;line-height:1.3}
+.call-bar-tooltip::before{content:attr(data-label) ': ';font-weight:500}
+.call-volume-row:hover>.call-bar-tooltip,.call-volume-row:focus-visible>.call-bar-tooltip{opacity:1!important}
+.call-volume-row:focus-visible{outline:2px solid #92a783;outline-offset:3px;border-radius:5px}
+html body .records-head{background:#faf6ec;border-bottom:1px solid #e4ddcd;padding:20px;gap:14px;flex-wrap:wrap}
+html body .records-head .panel-title.flat{background:none;color:#315238;border:0;padding:0;font-size:14px}
+html body .filters{gap:8px;align-items:center;flex-wrap:wrap;max-width:100%}
+html body .filters input{width:200px}.filters select{width:auto}
+html body .export-btn,html body .density-toggle{border:1px solid #d9d8c4;background:#f1f0df;color:#687b4d;padding:10px 12px;border-radius:8px;font-size:10px;font-weight:650;white-space:nowrap}
+html body .density-toggle[aria-pressed="true"]{background:#315b3f;color:#fff;border-color:#315b3f}
+html body .records-panel{max-width:100%}
+html body .records-panel .table-scroll{max-width:100%;width:100%;scrollbar-color:#c8c6ae #f6f3e9;scrollbar-width:thin;overscroll-behavior-x:contain}
+html body .records-panel .table-scroll thead th{position:sticky!important;top:0!important;z-index:5!important;background:#f1efdf!important;color:#748260!important;border-color:#e1ddcd!important;font-size:9px!important;font-weight:650!important;padding-top:12px!important;padding-bottom:12px!important}
+html body .records-panel td{padding-top:10px!important;padding-bottom:10px!important;border-color:#e6e1d1!important;color:#637158!important;font-size:10px!important}
+html body .records-panel tbody td{background:linear-gradient(90deg,var(--status-soft),#fffcf7 18px)!important}
+html body .records-panel tbody tr:hover td{background:#f4f3e5!important}
+html body .records-panel .table-scroll th:nth-child(2){left:0!important;z-index:8!important;background:#efeddb!important;box-shadow:1px 0 #ddd8c5}
+html body .records-panel td:nth-child(2){position:sticky!important;left:0!important;z-index:2!important;background:#faf6e9!important;box-shadow:1px 0 #ddd8c5}
+html body .records-panel td:nth-child(2) b{color:#365f3d!important;font-weight:750}
 html body .records-panel .ticket-status-select{min-height:27px!important;border-radius:7px!important}
 html body .records-panel .action-btn{border-radius:7px!important;box-shadow:none!important}
-html body .records-panel .attempt-count,html body .records-panel .attempt-minus{background:#f4f7fc!important;border-color:#dde7f4!important;color:#476f9b!important}
-html body .records-panel .table-scroll{scrollbar-color:#bdcadb #f5f7fb;scrollbar-width:thin}
-html body .upgrade-section{border-radius:16px!important;border-color:var(--line)!important;box-shadow:var(--shadow)!important}
-html body .last5-day{border-color:var(--line);box-shadow:none;border-radius:12px;padding:16px}
-html body .last5-day-head strong{font-size:12px;color:#294768}
-html body .last5-metric{background:#f8fafd;border-color:#edf1f6;border-radius:9px;padding:12px}
-html body .last5-metric b{font-size:18px;letter-spacing:-.4px;font-variant-numeric:tabular-nums}
-html body .records-loading-state{min-height:300px;color:#315e91;gap:14px;background:radial-gradient(ellipse at center,#f2f7ff,#fff 70%)}
-html body .tts-login{background:radial-gradient(ellipse at 25% 20%,#294b70,#112840 80%)}
-html body .tts-card{border:1px solid #ffffff45;border-radius:22px;padding:36px;box-shadow:0 25px 80px #081c3655}
-html body .tts-submit{background:#2563a8;border-radius:10px;min-height:44px}
-html body .tts-field input{border-radius:10px}
-html body button:focus-visible{outline:2px solid #4d8ae5;outline-offset:3px}
-@media(min-width:1400px){html body .stats-grid{gap:14px}html body .stat{padding:18px 16px}}
-@media(max-width:1200px){html body .analytics-grid{grid-template-columns:1fr}html body .io-wrap{justify-content:flex-start;padding:22px}html body main.container{padding:20px}html body .stat{min-height:80px}}
-@media(max-width:760px){html body .topbar{padding:18px 16px;min-height:86px}html body .brand h1{font-size:20px}html body main.container{padding:14px 12px 26px}html body main.container>.premium-tabs{margin-bottom:16px!important}html body .premium-tabs button{padding:10px 12px!important;font-size:11px!important}html body .stat{padding:14px 12px}html body .stat strong{font-size:23px}html body .records-head{padding:16px;align-items:flex-start;flex-direction:column}html body .filters{display:grid;width:100%;grid-template-columns:1fr 1fr}html body .filters input{width:100%;grid-column:1/-1}html body .filters select{width:100%;min-width:0}html body .metric-grid{grid-template-columns:1fr 1fr}html body .metric{padding:15px 12px}html body .panel-body{padding:18px}html body .tts-card{padding:28px 24px}}
-
-/* Premium workspace presentation. */
-html body .topbar{background:#111f33;min-height:84px;padding:16px 30px}
-html body .brand h1{font-size:20px;font-weight:650;letter-spacing:-.55px}
-html body .brand-icon{width:42px;height:42px;border-radius:12px}
-html body main.container{max-width:1600px;padding-top:24px}
-.workspace-intro{display:flex;justify-content:space-between;align-items:center;gap:24px;padding:8px 3px 26px}
-.workspace-eyebrow{font:700 9px Inter,sans-serif;letter-spacing:1.8px;color:#718079;display:flex;gap:8px;align-items:center}
-.workspace-eyebrow>span{width:6px;height:6px;background:#428673;border-radius:50%;box-shadow:0 0 0 4px #4286730e}
-.workspace-intro h2{font-size:32px;font-weight:650;letter-spacing:-1.3px;line-height:1.2;color:#1b2e42;margin:12px 0 7px}
-.workspace-intro p{font-size:12px;line-height:1.7;color:#82908e;margin:0}
-.workspace-intro-mark{width:64px;height:64px;flex:0 0 64px;border-radius:20px;border:1px solid #dce3df;background:linear-gradient(140deg,#fff,#e7eee9);display:grid;place-items:center;transform:rotate(-8deg);box-shadow:0 8px 16px #334c3810}
-.workspace-intro-mark span{font-weight:650;font-size:30px;letter-spacing:-3px;color:#2b5b51;transform:rotate(8deg)}
-html body main.container>.premium-tabs{box-shadow:0 4px 14px #1d322808!important;border-color:#e5e8e3!important;background:#ffffffef!important;backdrop-filter:blur(14px);border-radius:12px!important}
-html body .premium-tabs button.active{background:#244e46!important;box-shadow:0 3px 8px #244e4620!important}
-html body .premium-tabs button:not(.active):hover{background:#eef4f0!important;color:#244e46!important}
-html body .stat{position:relative;border-color:#e5e9e5;border-radius:12px;padding:19px 14px;min-height:100px;box-shadow:0 3px 12px #243a3004;transition:transform .18s,box-shadow .18s,border-color .18s}
-html body .stat:hover{transform:translateY(-3px);box-shadow:0 10px 22px #243a3010;border-color:#c7d5ca}
-html body .stat strong{font-size:29px;letter-spacing:-1.1px;color:#223c38;font-weight:650}
-html body .stat-icon{background:#edf4f1!important;color:#457768!important;border-radius:10px!important;width:35px!important;height:35px!important}
-html body .stat:nth-child(3) .stat-icon{background:#f2eef8!important;color:#8674a4!important}
-html body .stat:nth-child(5) .stat-icon{background:#fff7e5!important;color:#b79235!important}
-html body .stat:nth-child(6) .stat-icon{background:#fbefed!important;color:#bb7368!important}
-html body .stat:nth-child(7) .stat-icon{background:#e9f7ed!important;color:#4f966b!important}
-html body .stat:nth-child(8) .stat-icon{background:#eef0f3!important;color:#7c8994!important}
-html body .panel{border-radius:14px;border-color:#e4e8e3;box-shadow:0 3px 14px #223e3005}
-html body .panel-title{color:#29463d;padding:19px 20px;border-color:#edf0eb;font-weight:700;font-size:12px}
-html body .panel-title>span:first-child{color:#658e7c}
-html body .metric-grid{gap:0;padding:20px 12px}
-html body .metric{background:transparent;border:0;border-right:1px solid #edf0eb;border-radius:0;padding:6px 16px}
-html body .metric:last-child{border-right:0}
-html body .metric strong{font-size:25px;font-weight:650;letter-spacing:-.9px}
-html body .metric small{font-size:9px;color:#7f8d86;line-height:1.7;font-weight:650}
-html body .metric em{font-size:9px;color:#8c978f}
-html body .attendance-metric-card{border-radius:12px;border-color:#e3e8e1;padding:20px;background:linear-gradient(110deg,#fff,#fcfdfb)}
-html body .attendance-metric-card strong{color:#2f5e4c;font-weight:650;font-size:28px}
-html body .attendance-metric-icon{background:#eef5ed;color:#67916f}
-html body .primary,html body .dashboard-attendance-nav-action button{background:#315f50;box-shadow:0 3px 8px #315f5012}
-html body .primary:hover{background:#234a3c}
-html body .stamp-btn{background:linear-gradient(110deg,#2f6254,#458370);box-shadow:0 8px 18px #315f5020}
-html body .export-btn{background:#f0f5ee;color:#57784f;border-color:#dfe9d9}
-html body .last5-day{background:#fff;border-color:#e6ebe3;padding:18px;border-radius:13px}
-html body .last5-metric{border:0;background:#f6f8f4;padding:14px;border-radius:8px}
-html body .last5-metric b{color:#345c4f;font-weight:650;font-size:21px}
-html body .records-head{padding:22px 20px;border-color:#e8ede5}
-html body .records-panel .table-scroll thead th{background:#f5f7f2!important;color:#758673!important;letter-spacing:.1px}
-html body .records-panel tbody tr:hover td{background:#f3f7f1!important}
-html body .records-panel td:nth-child(2) b{color:#315e4d!important}
-html body .records-panel .action-btn.view{background:#72867a!important}
-html body .records-panel .action-btn.edit{background:#447d67!important}
-html body .records-panel .action-btn.delete{background:#c97f72!important}
-html body .records-panel .attempt-count,html body .records-panel .attempt-minus{background:#f5f8f2!important;color:#6a8561!important;border-color:#e0e9d9!important}
-html body .records-loading-state{color:#4b745e;background:radial-gradient(ellipse at center,#f2f7ed,#fff 70%)}
-html body .records-spinner{border-color:#e0eadd;border-top-color:#5d8564}
-.premium-button-pulse{animation:premium-press .3s ease}
-.premium-section-enter{animation:premium-enter .28s ease both}
-@keyframes premium-enter{from{opacity:.25;transform:translateY(7px)}to{opacity:1;transform:none}}
-@keyframes premium-press{50%{box-shadow:0 0 0 5px #6e92751c}}
-@media(min-width:761px) and (max-width:1400px){html body .stats-grid{grid-template-columns:repeat(4,minmax(0,1fr))}html body .stat{min-height:92px;padding:18px 20px}}
-@media(max-width:760px){.workspace-intro{padding:8px 2px 20px;gap:10px}.workspace-intro h2{font-size:25px;letter-spacing:-.8px}.workspace-intro p{font-size:11px}.workspace-intro-mark{width:48px;height:48px;flex-basis:48px;border-radius:15px}.workspace-intro-mark span{font-size:23px}.workspace-eyebrow{font-size:8px;letter-spacing:1.2px}html body .stat{min-height:92px}html body .metric:nth-child(2){border-right:0}html body .metric{padding:13px 12px}html body .metric-grid{gap:12px 0}html body .metric strong{font-size:23px}}
-@media(prefers-reduced-motion:reduce){.premium-section-enter,.premium-button-pulse{animation:none!important}html body .stat{transition:none}html body .stat:hover{transform:none}}
-
-
-.premium-records-reveal{animation:premium-records-in .24s ease-out both}
-@keyframes premium-records-in{from{opacity:0}to{opacity:1}}
-@media(prefers-reduced-motion:reduce){.premium-records-reveal{animation:none!important}}
-/* Adapt to the available CSS viewport, including browser zoom. */
-html body main.container,html body .panel,html body .workspace-grid,html body .analytics-grid,html body .stat,html body .attendance-metric-card{min-width:0}
-html body .brand h1{font-size:clamp(16px,1.65vw,23px)}
-html body .stat strong{font-size:clamp(23px,2.1vw,29px)}
-html body .records-panel{max-width:100%}
-html body .records-panel .table-scroll{max-width:100%;width:100%;overscroll-behavior-x:contain}
-@media(max-width:1050px){html body main.container>.premium-tabs{flex-wrap:wrap!important;position:relative!important;top:0!important}html body .dashboard-attendance-nav-action{min-width:0;flex-wrap:wrap;gap:8px}html body .stats-grid{grid-template-columns:repeat(4,minmax(0,1fr))}html body .records-head{flex-wrap:wrap}html body .filters{max-width:100%}html body .metric-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 0}html body .metric:nth-child(2){border-right:0}}
-@media(max-width:760px){html body .stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}html body .dashboard-attendance-nav-action{flex-basis:100%;justify-content:flex-end;padding:8px 4px 2px;border-top:1px solid #edf0eb}html body .attendance-metric-card{padding:16px;gap:10px}html body .records-head .filters{grid-template-columns:repeat(2,minmax(0,1fr))}html body .records-head .filters input{min-width:0}html body .tts-card{max-width:100%}html body .workspace-grid:not(.premium-view-hidden){grid-template-columns:minmax(0,1fr)}}
-@media(max-width:420px){html body main.container{padding:10px 8px 20px}html body .premium-tabs button{font-size:10px!important;padding:9px!important}html body .brand p{font-size:9px}html body .topbar{padding:14px 12px}html body .stat{padding:12px 10px;gap:8px}html body .stat-icon{width:28px!important;height:28px!important;flex-basis:28px}html body .stat small{white-space:normal;line-height:1.4}html body .attendance-metric-card strong{font-size:24px}html body .metric-grid{padding:14px 6px}html body .metric{padding:10px}html body .metric strong{font-size:21px}html body .panel-title{padding:15px}html body .records-head{padding:14px}}
-
-/* First paint always shows zero until the animation owns the real values. */
-html.metrics-pending #statsGrid .stat strong,
-html.metrics-pending #dashboardAttendanceMetrics .attendance-metric-card strong,
-html.metrics-pending .metric strong,
-html.metrics-pending .last5-metric b,
-html.metrics-pending .pickup-result strong,
-html.metrics-pending #statusBars .bar-row>b{position:relative;visibility:hidden}
-html.metrics-pending #statsGrid .stat strong::after,
-html.metrics-pending #dashboardAttendanceMetrics .attendance-metric-card strong::after,
-html.metrics-pending .metric strong::after,
-html.metrics-pending .last5-metric b::after,
-html.metrics-pending .pickup-result strong::after,
-html.metrics-pending #statusBars .bar-row>b::after{content:"0";position:absolute;inset:0;visibility:visible;color:inherit}
-html.metrics-pending #statusBars .bar>i{width:0!important}
-
-#statsGrid .stat strong,#dashboardAttendanceMetrics strong,.metric strong,.last5-metric b,#statusBars .bar-row>b{font-variant-numeric:tabular-nums; font-feature-settings:"tnum"}
-#statusBars .bar{contain:paint}
-#statusBars .bar>i{transform-origin:left center;transition:none!important}
-/* Frosted glass surfaces with opaque fallbacks for readability. */
-html body{background:radial-gradient(ellipse at 8% 0%,#dcece5 0,transparent 42%),radial-gradient(ellipse at 95% 35%,#e6e7f2 0,transparent 40%),#f4f7f4;background-attachment:fixed}
-html body .topbar{background:linear-gradient(110deg,rgba(16,33,49,.96),rgba(30,62,66,.92));border-bottom:1px solid #ffffff24;box-shadow:0 6px 26px #1e3d3a12}
-html body .panel,html body .stat,html body .attendance-metric-card,html body .last5-day{background:rgba(255,255,255,.86);border:1px solid rgba(255,255,255,.92);box-shadow:0 8px 26px #304f4710,inset 0 1px 0 #fff}
-html body main.container>.premium-tabs{background:rgba(255,255,255,.86)!important;border-color:rgba(255,255,255,.95)!important;box-shadow:0 5px 18px #304f4710!important}
-html body .panel-title,html body .records-head{background:rgba(255,255,255,.38);border-bottom-color:#dce6e074}
-html body .metric{background:transparent}
-html body .last5-metric{background:rgba(238,244,239,.75)}
-@supports(backdrop-filter:blur(12px)){html body .topbar{backdrop-filter:blur(18px)}html body .panel,html body .stat,html body .attendance-metric-card,html body .last5-day{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}html body main.container>.premium-tabs{backdrop-filter:blur(18px)}}
-/* The header and ticket identity stay visible inside the table's scroll area. */
-html body .records-panel .table-scroll thead th{position:sticky!important;top:0!important;z-index:5!important}
-html body .records-panel .table-scroll th:nth-child(2){left:0!important;z-index:8!important;background:#f0f5f0!important;box-shadow:1px 0 0 #dfe7df}
-html body .records-panel td:nth-child(2){position:sticky!important;left:0!important;z-index:2!important;background:#f7faf7!important;box-shadow:1px 0 0 #dfe7df}
-html body .records-panel tbody tr:hover td:nth-child(2){background:#edf5ed!important}
-html body .density-toggle{border:1px solid #dce6dd;background:#ffffff90;color:#426954;border-radius:8px;padding:10px 12px;font-size:11px;font-weight:650;white-space:nowrap}
-html body .density-toggle[aria-pressed="true"]{background:#315f50;color:#fff;border-color:#315f50}
+html body .records-panel .action-btn.edit{background:#5c7d52!important}.records-panel .action-btn.view{background:#87927c!important}.records-panel .action-btn.delete{background:#c58471!important}
+html body .records-panel .attempt-count,html body .records-panel .attempt-minus{background:#f2f1e3!important;border-color:#dfdfc8!important;color:#7d8b60!important}
 html.records-compact body .records-panel td{padding-top:5px!important;padding-bottom:5px!important}
 html.records-compact body .records-panel th{padding-top:8px!important;padding-bottom:8px!important}
-.record-save-status{padding:9px 20px;border-bottom:1px solid #e5ece5;background:#f3f8f0;font-size:11px;color:#5a7552;display:flex;align-items:center;gap:12px}
-.record-save-status[hidden]{display:none}
-.record-save-status[data-phase="error"]{background:#fff3ed;color:#a45b36}
-.record-save-status button{border:1px solid #d8b9a7;border-radius:6px;background:#fff;color:#965635;padding:5px 9px;font-size:11px}
-.row-save-feedback{display:block;font:600 8px Inter,sans-serif;color:#9a7a35;margin-top:4px;line-height:1.2;min-height:10px}
-.row-save-feedback[data-phase="saved"]{color:#448267}.row-save-feedback[data-phase="error"]{color:#b36143}
+.record-save-status{padding:9px 20px;border-bottom:1px solid #e3e4d1;background:#f0f3e3;font-size:11px;color:#657b4d;display:flex;align-items:center;gap:12px}
+.record-save-status[hidden]{display:none}.record-save-status[data-phase="error"]{background:#fff0e5;color:#a1693e}
+.record-save-status button{border:1px solid #d8bfa3;background:#fffaf2;color:#976e43;border-radius:6px;padding:5px 9px;font-size:11px}
+.row-save-feedback{display:block;font:600 8px Inter,sans-serif;color:#a18a4b;margin-top:4px;line-height:1.2;min-height:10px}
+.row-save-feedback[data-phase="saved"]{color:#63834d}.row-save-feedback[data-phase="error"]{color:#b47851}
+html body .upgrade-section{border-radius:15px!important;border-color:var(--border)!important;box-shadow:var(--shadow)!important}
+html body .last5-day{border-radius:12px;padding:17px;background:#fefbf4}
+html body .last5-day-head strong{color:#48663d;font-size:12px}
+html body .last5-metric{background:#f0f2e4;border:1px solid #e5e7d5;border-radius:8px;padding:13px}
+html body .last5-metric small{color:#899576;font-size:9px}
+html body .last5-metric b{color:#466a38;font-size:20px;font-weight:650}
+html body .records-loading-state{background:#fefbf4;min-height:280px;color:#758759;gap:13px;padding:28px}
 .records-skeleton{display:grid;gap:12px;width:100%;max-width:1000px;padding:12px 0}
-.records-skeleton>div{display:grid;grid-template-columns:1fr 1.4fr 1fr 1.3fr .8fr;gap:16px;min-height:29px;align-items:center;border-bottom:1px solid #e4ece5;padding-bottom:10px}
-.records-skeleton span{display:block;height:10px;border-radius:5px;background:linear-gradient(100deg,#e8eee9 25%,#f8fbf7 45%,#e8eee9 65%);background-size:220% 100%;animation:records-shimmer 1.6s ease-in-out infinite}
+.records-skeleton>div{display:grid;grid-template-columns:1fr 1.4fr 1fr 1.3fr .8fr;gap:16px;min-height:29px;align-items:center;border-bottom:1px solid #e9e5d4;padding-bottom:10px}
+.records-skeleton span{height:10px;border-radius:5px;background:linear-gradient(100deg,#ebe8d8 25%,#fcfaf1 45%,#ebe8d8 65%);background-size:220% 100%;animation:records-shimmer 1.6s ease-in-out infinite}
 .records-skeleton span:nth-child(2){width:80%}.records-skeleton span:nth-child(5){width:60%}
-@keyframes records-shimmer{from{background-position:100% 0}to{background-position:-100% 0}}
-@media(max-width:600px){.records-skeleton>div{gap:9px}.record-save-status{padding:9px 14px}html body .density-toggle{padding:10px 8px;font-size:10px}}
-@media(prefers-reduced-motion:reduce){.records-skeleton span{animation:none}}
+html body .tts-login{background:radial-gradient(ellipse at 20% 20%,#65805c,#263f2c 85%)}
+html body .tts-card{background:#fffaf0;border:1px solid #e7dec7;border-radius:20px;box-shadow:0 24px 65px #1e322b30}
+html body .tts-card h2,html body .tts-brand strong{color:#35573b}.tts-logo{background:#446d45}
+html body .tts-submit{background:#3e6c42;border-radius:9px;min-height:44px}
+html body button:focus-visible{outline:2px solid #8fa26e;outline-offset:3px}
+#statsGrid .stat strong,#dashboardAttendanceMetrics strong,.metric strong,.last5-metric b,#statusBars .bar-row>b{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+.premium-button-pulse{animation:premium-press .3s ease}.premium-section-enter{animation:premium-enter .28s ease both}.premium-records-reveal{animation:premium-records-in .24s ease-out both}
+@keyframes premium-press{50%{box-shadow:0 0 0 5px #96a16b19}}@keyframes premium-enter{from{opacity:.25;transform:translateY(7px)}to{opacity:1;transform:none}}@keyframes premium-records-in{from{opacity:0}to{opacity:1}}@keyframes records-shimmer{from{background-position:100% 0}to{background-position:-100% 0}}
+/* Prevent current values from flashing before a count-up starts. */
+html.metrics-pending #statsGrid .stat strong,html.metrics-pending #dashboardAttendanceMetrics .attendance-metric-card strong,html.metrics-pending .metric strong,html.metrics-pending .last5-metric b,html.metrics-pending .pickup-result strong,html.metrics-pending #statusBars .bar-row>b{position:relative;visibility:hidden}
+html.metrics-pending #statsGrid .stat strong::after,html.metrics-pending #dashboardAttendanceMetrics .attendance-metric-card strong::after,html.metrics-pending .metric strong::after,html.metrics-pending .last5-metric b::after,html.metrics-pending .pickup-result strong::after,html.metrics-pending #statusBars .bar-row>b::after{content:"0";position:absolute;inset:0;visibility:visible;color:inherit}
+html.metrics-pending #statusBars .bar>i{width:0!important}
+@media(max-width:1400px) and (min-width:761px){html body .stats-grid{grid-template-columns:repeat(4,minmax(0,1fr))}html body .stat{min-height:88px;padding:17px 20px}}
+@media(max-width:1200px){html body .analytics-grid{grid-template-columns:1fr}html body .header-right{display:none}html body main.container{padding:18px}}
+@media(max-width:1050px){html body main.container>.premium-tabs{flex-wrap:wrap!important;position:relative!important;top:0!important}html body .dashboard-attendance-nav-action{min-width:0;flex-wrap:wrap;gap:8px}html body .metric-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 0}html body .metric:nth-child(2){border-right:0}}
+@media(max-width:760px){html body .topbar{padding:16px;min-height:80px}html body main.container{padding:14px 12px 26px}html body .premium-tabs button[data-view]{padding:10px 12px!important;font-size:10px!important}html body .dashboard-attendance-nav-action{flex-basis:100%;justify-content:flex-end;padding:8px 4px 2px;border-top:1px solid #e8e2d1}html body .stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}html body .stat{padding:15px 12px;min-height:90px}html body .metric-grid{padding:14px 6px;gap:12px 0}html body .metric{padding:11px}html body .metric strong{font-size:21px}html body .panel-body{padding:17px}html body .workspace-grid:not(.premium-view-hidden){grid-template-columns:minmax(0,1fr)}html body .records-head{padding:16px;align-items:flex-start;flex-direction:column}html body .filters{display:grid;width:100%;grid-template-columns:repeat(2,minmax(0,1fr))}html body .filters input{width:100%;min-width:0;grid-column:1/-1}html body .filters select{width:100%;min-width:0}html body .density-toggle{font-size:10px;padding:10px 8px}.records-skeleton>div{gap:9px}.record-save-status{padding:9px 14px}}
+@media(max-width:420px){html body main.container{padding:10px 8px 20px}html body .premium-tabs button[data-view]{padding:9px!important}html body .brand p{font-size:9px}html body .stat-icon{width:26px!important;flex-basis:26px}html body .stat{padding:12px 9px;gap:7px}html body .stat small{font-size:9px}html body .panel-title{padding:15px}html body .attendance-metric-card{padding:15px}html body .attendance-metric-card strong{font-size:24px}}
+@media(prefers-reduced-motion:reduce){.premium-section-enter,.premium-button-pulse,.premium-records-reveal,.records-skeleton span{animation:none!important}html body .stat{transition:none}}
 
-/* Change tab text and its background together; never fade white text over white. */
-html body .premium-tabs button,html body .premium-tabs button span{animation:none!important;transition:none!important;opacity:1!important;visibility:visible!important;transform:none!important}
-html body .premium-tabs button:not(.active),html body .premium-tabs button:not(.active) span{color:#61766d!important}
-html body .premium-tabs button.active{color:#fff!important;background:#244e46!important}
-html body .premium-tabs button.active span{color:#fff!important;background:transparent!important}
+html body #dashboardAttendanceMetrics .attendance-metric-icon{background:#f2ecd9!important;color:#637a4a!important;box-shadow:none!important;border:1px solid #e5dcc3!important}
+html body #dashboardAttendanceBtn{color:#fff!important;background:#53794a!important}
+html body #dashboardAttendanceBtn.present{background:#6a8d52!important}
