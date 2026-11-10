@@ -64,16 +64,17 @@ function applyCache(user,state){
  notifyDashboard(user,'firebase-hydrate')
 }
 async function legacyCloudState(user){const snap=await getDocs(collection(db,'users',user.uid,'localBackup')),out={};snap.forEach(d=>{const x=d.data();if(x?.key)out[x.key]=x.raw});return out}
+function reportSave(phase,state){window.dispatchEvent(new CustomEvent('ticket-cloud-save',{detail:{phase,tickets:parseArray(state[TICKET_KEY])}}))}
 async function saveState(user,state=localState()){
  if(!user||hydrating)return false;
  const clean=sanitizeState(state),serialized=serialize(clean);
- if(serialized===lastSerialized){if(sync)sync.textContent='Firebase saved ✓';return true}
- saving=true;if(sync)sync.textContent='Saving…';
+ if(serialized===lastSerialized){if(sync)sync.textContent='Firebase saved ✓';reportSave('saved',clean);return true}
+ saving=true;if(sync)sync.textContent='Saving…';reportSave('saving',clean);
  try{
   await setDoc(stateRef(user),{values:clean,ownerUid:user.uid,ownerEmail:user.email||null,updatedAt:serverTimestamp(),schemaVersion:13},{merge:false});
   lastSerialized=serialized;if(sync)sync.textContent='Firebase saved ✓';
-  window.dispatchEvent(new CustomEvent('firebase-data-saved'));return true
- }finally{saving=false}
+  reportSave('saved',clean);window.dispatchEvent(new CustomEvent('firebase-data-saved'));return true
+ }catch(error){reportSave('error',clean);throw error}finally{saving=false}
 }
 async function flushSave(user){if(!user||hydrating)return;pendingState=localState();if(saving){saveAgain=true;return}do{saveAgain=false;const state=pendingState;pendingState=null;try{await saveState(user,state)}catch(e){console.error(e);if(sync)sync.textContent='Firebase retry needed'}if(pendingState)saveAgain=true}while(saveAgain&&auth.currentUser?.uid===user.uid)}
 function queueSave(user){if(!user)return;clearTimeout(saveTimer);saveTimer=setTimeout(()=>{saveTimer=0;if(!auth.currentUser||auth.currentUser.uid!==user.uid)return;pendingState=localState();void flushSave(user)},120)}
@@ -133,7 +134,7 @@ async function permanentlyDeleteTicket(id){
  notifyDashboard(user,'firebase-ticket-delete');
  return true
 }
-window.FirebaseTicketPersistence={deleteTicket:permanentlyDeleteTicket,deletedIds:()=>[...deletedSet(localState())]};
+window.FirebaseTicketPersistence={retrySave:()=>flushSave(auth.currentUser),deleteTicket:permanentlyDeleteTicket,deletedIds:()=>[...deletedSet(localState())]};
 
 const original=Storage.prototype.setItem;
 Storage.prototype.setItem=function(k,v){

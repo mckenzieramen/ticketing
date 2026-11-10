@@ -165,3 +165,34 @@ html.metrics-pending #statusBars .bar>i{width:0!important}
 #statsGrid .stat strong,#dashboardAttendanceMetrics strong,.metric strong,.last5-metric b,#statusBars .bar-row>b{font-variant-numeric:tabular-nums; font-feature-settings:"tnum"}
 #statusBars .bar{contain:paint}
 #statusBars .bar>i{transform-origin:left center;transition:none!important}
+/* Frosted glass surfaces with opaque fallbacks for readability. */
+html body{background:radial-gradient(ellipse at 8% 0%,#dcece5 0,transparent 42%),radial-gradient(ellipse at 95% 35%,#e6e7f2 0,transparent 40%),#f4f7f4;background-attachment:fixed}
+html body .topbar{background:linear-gradient(110deg,rgba(16,33,49,.96),rgba(30,62,66,.92));border-bottom:1px solid #ffffff24;box-shadow:0 6px 26px #1e3d3a12}
+html body .panel,html body .stat,html body .attendance-metric-card,html body .last5-day{background:rgba(255,255,255,.86);border:1px solid rgba(255,255,255,.92);box-shadow:0 8px 26px #304f4710,inset 0 1px 0 #fff}
+html body main.container>.premium-tabs{background:rgba(255,255,255,.86)!important;border-color:rgba(255,255,255,.95)!important;box-shadow:0 5px 18px #304f4710!important}
+html body .panel-title,html body .records-head{background:rgba(255,255,255,.38);border-bottom-color:#dce6e074}
+html body .metric{background:transparent}
+html body .last5-metric{background:rgba(238,244,239,.75)}
+@supports(backdrop-filter:blur(12px)){html body .topbar{backdrop-filter:blur(18px)}html body .panel,html body .stat,html body .attendance-metric-card,html body .last5-day{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}html body main.container>.premium-tabs{backdrop-filter:blur(18px)}}
+/* The header and ticket identity stay visible inside the table's scroll area. */
+html body .records-panel .table-scroll thead th{position:sticky!important;top:0!important;z-index:5!important}
+html body .records-panel .table-scroll th:nth-child(2){left:0!important;z-index:8!important;background:#f0f5f0!important;box-shadow:1px 0 0 #dfe7df}
+html body .records-panel td:nth-child(2){position:sticky!important;left:0!important;z-index:2!important;background:#f7faf7!important;box-shadow:1px 0 0 #dfe7df}
+html body .records-panel tbody tr:hover td:nth-child(2){background:#edf5ed!important}
+html body .density-toggle{border:1px solid #dce6dd;background:#ffffff90;color:#426954;border-radius:8px;padding:10px 12px;font-size:11px;font-weight:650;white-space:nowrap}
+html body .density-toggle[aria-pressed="true"]{background:#315f50;color:#fff;border-color:#315f50}
+html.records-compact body .records-panel td{padding-top:5px!important;padding-bottom:5px!important}
+html.records-compact body .records-panel th{padding-top:8px!important;padding-bottom:8px!important}
+.record-save-status{padding:9px 20px;border-bottom:1px solid #e5ece5;background:#f3f8f0;font-size:11px;color:#5a7552;display:flex;align-items:center;gap:12px}
+.record-save-status[hidden]{display:none}
+.record-save-status[data-phase="error"]{background:#fff3ed;color:#a45b36}
+.record-save-status button{border:1px solid #d8b9a7;border-radius:6px;background:#fff;color:#965635;padding:5px 9px;font-size:11px}
+.row-save-feedback{display:block;font:600 8px Inter,sans-serif;color:#9a7a35;margin-top:4px;line-height:1.2;min-height:10px}
+.row-save-feedback[data-phase="saved"]{color:#448267}.row-save-feedback[data-phase="error"]{color:#b36143}
+.records-skeleton{display:grid;gap:12px;width:100%;max-width:1000px;padding:12px 0}
+.records-skeleton>div{display:grid;grid-template-columns:1fr 1.4fr 1fr 1.3fr .8fr;gap:16px;min-height:29px;align-items:center;border-bottom:1px solid #e4ece5;padding-bottom:10px}
+.records-skeleton span{display:block;height:10px;border-radius:5px;background:linear-gradient(100deg,#e8eee9 25%,#f8fbf7 45%,#e8eee9 65%);background-size:220% 100%;animation:records-shimmer 1.6s ease-in-out infinite}
+.records-skeleton span:nth-child(2){width:80%}.records-skeleton span:nth-child(5){width:60%}
+@keyframes records-shimmer{from{background-position:100% 0}to{background-position:-100% 0}}
+@media(max-width:600px){.records-skeleton>div{gap:9px}.record-save-status{padding:9px 14px}html body .density-toggle{padding:10px 8px;font-size:10px}}
+@media(prefers-reduced-motion:reduce){.records-skeleton span{animation:none}}

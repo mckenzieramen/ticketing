@@ -1,5 +1,6 @@
 (()=>{'use strict';
-const KEY='premiumTicketTracker.v1',STATUSES=['Open','Pending','On Hold','Solved','Closed','Merged'],COLORS={Open:'#249ee4',Pending:'#f59e0b','On Hold':'#64748b',Solved:'#10b981',Closed:'#334155',Merged:'#7c3aed'};
+if(window.ticketRecordsRendererReady)return;window.ticketRecordsRendererReady=true;
+const KEY='premiumTicketTracker.v1',STATUSES=['Open','Pending','On Hold','Solved','Closed','Merged'],COLORS={Open:'#39a7e8',Pending:'#f7b916','On Hold':'#ef4c4c',Solved:'#16b86c',Closed:'#728296',Merged:'#7c3aed'};
 const $=id=>document.getElementById(id),pad=n=>String(n).padStart(2,'0'),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const color=s=>COLORS[s]||COLORS.Open,typeColor=s=>s==='Inbound Call'?'#13b76a':'#7145e8';
 const now=()=>{const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`};

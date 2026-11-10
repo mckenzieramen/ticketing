@@ -1,6 +1,7 @@
 (()=>{'use strict';
+if(window.recentTicketRendererReady)return;window.recentTicketRendererReady=true;
 const KEY='premiumTicketTracker.v1',STATUSES=['Open','Pending','On Hold','Solved','Closed','Merged'];
-const COLORS={Open:'#249ee4',Pending:'#f59e0b','On Hold':'#64748b',Solved:'#10b981',Closed:'#334155',Merged:'#7c3aed'};
+const COLORS={Open:'#39a7e8',Pending:'#f7b916','On Hold':'#ef4c4c',Solved:'#16b86c',Closed:'#728296',Merged:'#7c3aed'};
 const pad=n=>String(n).padStart(2,'0'),fmt=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 const parse=v=>{const m=String(v||'').match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})$/);return m?new Date(+m[1],+m[2]-1,+m[3],+m[4],+m[5],+m[6]):null};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
