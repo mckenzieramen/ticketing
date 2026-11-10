@@ -1,6 +1,6 @@
 /* Ticket workspace: calm navy, clear hierarchy, and consistent surfaces. */
 :root{--bg:#f4f6fa;--text:#172b46;--muted:#748297;--line:#e4eaf2;--shadow:0 4px 22px rgba(24,47,79,.045);--navy:#142d50;--blue:#2563eb}
-html body{background:#f4f6fa;color:var(--text);font-size:13px;-webkit-font-smoothing:antialiased}
+html body{background:#f5f5f2;color:var(--text);font-size:13px;-webkit-font-smoothing:antialiased}
 html body .topbar{background:linear-gradient(115deg,#122a48,#1c3d63);min-height:94px;padding:20px 30px;box-shadow:none;border-bottom:1px solid #ffffff12}
 html body .brand h1{font-size:23px;letter-spacing:-.7px;font-weight:750}
 html body .brand p{font-size:11px;letter-spacing:.4px;color:#b8cce2;margin-top:6px}
@@ -71,3 +71,64 @@ html body button:focus-visible{outline:2px solid #4d8ae5;outline-offset:3px}
 @media(min-width:1400px){html body .stats-grid{gap:14px}html body .stat{padding:18px 16px}}
 @media(max-width:1200px){html body .analytics-grid{grid-template-columns:1fr}html body .io-wrap{justify-content:flex-start;padding:22px}html body main.container{padding:20px}html body .stat{min-height:80px}}
 @media(max-width:760px){html body .topbar{padding:18px 16px;min-height:86px}html body .brand h1{font-size:20px}html body main.container{padding:14px 12px 26px}html body main.container>.premium-tabs{margin-bottom:16px!important}html body .premium-tabs button{padding:10px 12px!important;font-size:11px!important}html body .stat{padding:14px 12px}html body .stat strong{font-size:23px}html body .records-head{padding:16px;align-items:flex-start;flex-direction:column}html body .filters{display:grid;width:100%;grid-template-columns:1fr 1fr}html body .filters input{width:100%;grid-column:1/-1}html body .filters select{width:100%;min-width:0}html body .metric-grid{grid-template-columns:1fr 1fr}html body .metric{padding:15px 12px}html body .panel-body{padding:18px}html body .tts-card{padding:28px 24px}}
+
+/* Premium workspace presentation. */
+html body .topbar{background:#111f33;min-height:84px;padding:16px 30px}
+html body .brand h1{font-size:20px;font-weight:650;letter-spacing:-.55px}
+html body .brand-icon{width:42px;height:42px;border-radius:12px}
+html body main.container{max-width:1600px;padding-top:24px}
+.workspace-intro{display:flex;justify-content:space-between;align-items:center;gap:24px;padding:8px 3px 26px}
+.workspace-eyebrow{font:700 9px Inter,sans-serif;letter-spacing:1.8px;color:#718079;display:flex;gap:8px;align-items:center}
+.workspace-eyebrow>span{width:6px;height:6px;background:#428673;border-radius:50%;box-shadow:0 0 0 4px #4286730e}
+.workspace-intro h2{font-size:32px;font-weight:650;letter-spacing:-1.3px;line-height:1.2;color:#1b2e42;margin:12px 0 7px}
+.workspace-intro p{font-size:12px;line-height:1.7;color:#82908e;margin:0}
+.workspace-intro-mark{width:64px;height:64px;flex:0 0 64px;border-radius:20px;border:1px solid #dce3df;background:linear-gradient(140deg,#fff,#e7eee9);display:grid;place-items:center;transform:rotate(-8deg);box-shadow:0 8px 16px #334c3810}
+.workspace-intro-mark span{font-weight:650;font-size:30px;letter-spacing:-3px;color:#2b5b51;transform:rotate(8deg)}
+html body main.container>.premium-tabs{box-shadow:0 4px 14px #1d322808!important;border-color:#e5e8e3!important;background:#ffffffef!important;backdrop-filter:blur(14px);border-radius:12px!important}
+html body .premium-tabs button.active{background:#244e46!important;box-shadow:0 3px 8px #244e4620!important}
+html body .premium-tabs button:not(.active):hover{background:#eef4f0!important;color:#244e46!important}
+html body .stat{position:relative;border-color:#e5e9e5;border-radius:12px;padding:19px 14px;min-height:100px;box-shadow:0 3px 12px #243a3004;transition:transform .18s,box-shadow .18s,border-color .18s}
+html body .stat:hover{transform:translateY(-3px);box-shadow:0 10px 22px #243a3010;border-color:#c7d5ca}
+html body .stat strong{font-size:29px;letter-spacing:-1.1px;color:#223c38;font-weight:650}
+html body .stat-icon{background:#edf4f1!important;color:#457768!important;border-radius:10px!important;width:35px!important;height:35px!important}
+html body .stat:nth-child(3) .stat-icon{background:#f2eef8!important;color:#8674a4!important}
+html body .stat:nth-child(5) .stat-icon{background:#fff7e5!important;color:#b79235!important}
+html body .stat:nth-child(6) .stat-icon{background:#fbefed!important;color:#bb7368!important}
+html body .stat:nth-child(7) .stat-icon{background:#e9f7ed!important;color:#4f966b!important}
+html body .stat:nth-child(8) .stat-icon{background:#eef0f3!important;color:#7c8994!important}
+html body .panel{border-radius:14px;border-color:#e4e8e3;box-shadow:0 3px 14px #223e3005}
+html body .panel-title{color:#29463d;padding:19px 20px;border-color:#edf0eb;font-weight:700;font-size:12px}
+html body .panel-title>span:first-child{color:#658e7c}
+html body .metric-grid{gap:0;padding:20px 12px}
+html body .metric{background:transparent;border:0;border-right:1px solid #edf0eb;border-radius:0;padding:6px 16px}
+html body .metric:last-child{border-right:0}
+html body .metric strong{font-size:25px;font-weight:650;letter-spacing:-.9px}
+html body .metric small{font-size:9px;color:#7f8d86;line-height:1.7;font-weight:650}
+html body .metric em{font-size:9px;color:#8c978f}
+html body .attendance-metric-card{border-radius:12px;border-color:#e3e8e1;padding:20px;background:linear-gradient(110deg,#fff,#fcfdfb)}
+html body .attendance-metric-card strong{color:#2f5e4c;font-weight:650;font-size:28px}
+html body .attendance-metric-icon{background:#eef5ed;color:#67916f}
+html body .primary,html body .dashboard-attendance-nav-action button{background:#315f50;box-shadow:0 3px 8px #315f5012}
+html body .primary:hover{background:#234a3c}
+html body .stamp-btn{background:linear-gradient(110deg,#2f6254,#458370);box-shadow:0 8px 18px #315f5020}
+html body .export-btn{background:#f0f5ee;color:#57784f;border-color:#dfe9d9}
+html body .last5-day{background:#fff;border-color:#e6ebe3;padding:18px;border-radius:13px}
+html body .last5-metric{border:0;background:#f6f8f4;padding:14px;border-radius:8px}
+html body .last5-metric b{color:#345c4f;font-weight:650;font-size:21px}
+html body .records-head{padding:22px 20px;border-color:#e8ede5}
+html body .records-panel .table-scroll thead th{background:#f5f7f2!important;color:#758673!important;letter-spacing:.1px}
+html body .records-panel tbody tr:hover td{background:#f3f7f1!important}
+html body .records-panel td:nth-child(2) b{color:#315e4d!important}
+html body .records-panel .action-btn.view{background:#72867a!important}
+html body .records-panel .action-btn.edit{background:#447d67!important}
+html body .records-panel .action-btn.delete{background:#c97f72!important}
+html body .records-panel .attempt-count,html body .records-panel .attempt-minus{background:#f5f8f2!important;color:#6a8561!important;border-color:#e0e9d9!important}
+html body .records-loading-state{color:#4b745e;background:radial-gradient(ellipse at center,#f2f7ed,#fff 70%)}
+html body .records-spinner{border-color:#e0eadd;border-top-color:#5d8564}
+.premium-button-pulse{animation:premium-press .3s ease}
+.premium-section-enter{animation:premium-enter .28s ease both}
+@keyframes premium-enter{from{opacity:.25;transform:translateY(7px)}to{opacity:1;transform:none}}
+@keyframes premium-press{50%{box-shadow:0 0 0 5px #6e92751c}}
+@media(min-width:761px) and (max-width:1400px){html body .stats-grid{grid-template-columns:repeat(4,minmax(0,1fr))}html body .stat{min-height:92px;padding:18px 20px}}
+@media(max-width:760px){.workspace-intro{padding:8px 2px 20px;gap:10px}.workspace-intro h2{font-size:25px;letter-spacing:-.8px}.workspace-intro p{font-size:11px}.workspace-intro-mark{width:48px;height:48px;flex-basis:48px;border-radius:15px}.workspace-intro-mark span{font-size:23px}.workspace-eyebrow{font-size:8px;letter-spacing:1.2px}html body .stat{min-height:92px}html body .metric:nth-child(2){border-right:0}html body .metric{padding:13px 12px}html body .metric-grid{gap:12px 0}html body .metric strong{font-size:23px}}
+@media(prefers-reduced-motion:reduce){.premium-section-enter,.premium-button-pulse{animation:none!important}html body .stat{transition:none}html body .stat:hover{transform:none}}
