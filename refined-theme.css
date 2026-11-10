@@ -1,0 +1,73 @@
+/* Ticket workspace: calm navy, clear hierarchy, and consistent surfaces. */
+:root{--bg:#f4f6fa;--text:#172b46;--muted:#748297;--line:#e4eaf2;--shadow:0 4px 22px rgba(24,47,79,.045);--navy:#142d50;--blue:#2563eb}
+html body{background:#f4f6fa;color:var(--text);font-size:13px;-webkit-font-smoothing:antialiased}
+html body .topbar{background:linear-gradient(115deg,#122a48,#1c3d63);min-height:94px;padding:20px 30px;box-shadow:none;border-bottom:1px solid #ffffff12}
+html body .brand h1{font-size:23px;letter-spacing:-.7px;font-weight:750}
+html body .brand p{font-size:11px;letter-spacing:.4px;color:#b8cce2;margin-top:6px}
+html body .brand-icon::before{animation:none}
+html body .header-right{gap:18px}.header-chip small,.profile small{opacity:.75}.header-chip strong{font-variant-numeric:tabular-nums}
+html body main.container{padding:24px 28px 36px;max-width:1680px}
+html body main.container>.premium-tabs{padding:7px!important;gap:5px!important;border-radius:14px!important;border:1px solid #e2e8f1!important;box-shadow:0 4px 16px #18315305!important;margin-bottom:22px!important;background:#fff!important;top:10px!important}
+html body .premium-tabs button{padding:11px 18px!important;border-radius:9px!important;font-size:12px!important;font-weight:650!important;color:#687a90!important}
+html body .premium-tabs button.active{background:#1e4678!important;box-shadow:0 3px 8px #173d6620!important;color:#fff!important}
+html body .premium-tabs button:not(.active):hover{background:#edf3fc!important;color:#24558f!important}
+html body .stats-grid{gap:12px;margin-bottom:18px}
+html body .stat{border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:17px 13px;gap:10px;align-items:center;min-height:88px}
+html body .stat-icon{width:34px;height:34px;flex:0 0 34px;border-radius:11px;font-size:16px;box-shadow:none}
+html body .stat small{font-size:10px;color:#78869a;font-weight:600}
+html body .stat strong{font-size:24px;font-weight:750;letter-spacing:-.8px;font-variant-numeric:tabular-nums;color:#1b3351;margin-top:5px}
+html body .panel{border-radius:16px;border-color:var(--line);box-shadow:var(--shadow)}
+html body .panel-title{background:#fff;color:#203b5f;padding:18px 20px;border-bottom:1px solid #edf0f5;font-size:13px;font-weight:750;letter-spacing:-.1px}
+html body .panel-title>span:first-child{color:#4978b2}
+html body .panel-body{padding:22px}
+html body .workspace-grid{gap:18px}
+html body .analytics-grid{gap:18px;margin-top:18px;grid-template-columns:minmax(0,1.65fr) minmax(230px,.8fr) minmax(210px,.7fr)}
+html body .metric-grid{padding:16px;gap:10px}
+html body .metric{border:1px solid #e5edf5;background:linear-gradient(155deg,#fff,#fafcff);border-radius:12px;padding:17px 12px;min-width:0}
+html body .metric small{font-size:10px;line-height:1.5;color:#64758a;font-weight:650}
+html body .metric strong{font-size:23px;letter-spacing:-.65px;font-variant-numeric:tabular-nums;line-height:1.2;margin-top:12px}
+html body .metric em{line-height:1.6;font-size:10px;margin-top:7px}
+html body .status-bars{padding:18px 20px}.bar-row{margin:12px 0;gap:10px}.bar{height:7px}
+html body .io-wrap{padding:22px 16px;gap:14px;flex-wrap:wrap;justify-content:center}
+html body .attendance-metric-card{border-color:var(--line);border-radius:14px;background:#fff;box-shadow:var(--shadow);padding:17px 20px}
+html body .attendance-metric-card small{font-size:9px;letter-spacing:.65px;font-weight:650}
+html body .attendance-metric-card strong{font-size:25px;letter-spacing:-.7px;font-variant-numeric:tabular-nums}
+html body .dashboard-attendance-nav-action button{background:#2563a8;border-radius:8px;font-weight:650}
+html body input,html body select{border-radius:9px;border-color:#dfe6ef;background:#fcfdff;min-height:40px;font-size:12px;padding:11px 13px;transition:border-color .16s,box-shadow .16s}
+html body input::placeholder{color:#9aa7b7}
+html body input:focus,html body select:focus{border-color:#5b8ad4;background:#fff;box-shadow:0 0 0 3px #2563eb12}
+html body input:disabled,html body select:disabled{background:#f0f3f7;color:#98a3b3}
+html body label{line-height:1.6;color:#52647b;font-weight:650}
+html body .primary{background:#2563a8;border-radius:9px;box-shadow:0 4px 9px #245c9b16;padding:13px;font-weight:650}
+html body .primary:hover{background:#1d518e}
+html body .stamp-btn{background:linear-gradient(110deg,#304eb0,#5a52c4);box-shadow:0 7px 18px #4a50ac24;border-radius:12px;font-size:18px}
+html body .dark-btn{background:#24456b;border-radius:8px;padding:11px 16px}
+html body .helper{line-height:1.65;color:#8290a2}
+html body .records-head{background:#fff;padding:20px;gap:16px;border-bottom:1px solid #e6edf4}
+html body .records-head .panel-title.flat{border:0;padding:0;color:#203b5f;font-size:15px}
+html body .filters{gap:8px;align-items:center;flex-wrap:wrap}
+html body .filters input{width:205px}.filters input,.filters select{border-color:#e1e8f1}
+html body .export-btn{color:#2d5f99;background:#edf4fd;border:1px solid #dce8f8;border-radius:8px;padding:11px 14px;white-space:nowrap}
+html body .records-panel .table-scroll thead th{background:#f7f9fc!important;color:#6e7f94!important;font-weight:650!important;font-size:9px!important;padding-top:12px!important;padding-bottom:12px!important;border-color:#e7edf4!important}
+html body .records-panel td{padding-top:10px!important;padding-bottom:10px!important;border-color:#e7edf4!important;color:#53667e!important;font-size:10px!important}
+html body .records-panel tbody td{background:linear-gradient(90deg,var(--status-soft),#fff 16px)!important}
+html body .records-panel tbody tr:hover td{background:#f5f9ff!important}
+html body .records-panel td:nth-child(2) b{color:#254c7d!important;font-weight:750}
+html body .records-panel .ticket-status-select{min-height:27px!important;border-radius:7px!important}
+html body .records-panel .action-btn{border-radius:7px!important;box-shadow:none!important}
+html body .records-panel .attempt-count,html body .records-panel .attempt-minus{background:#f4f7fc!important;border-color:#dde7f4!important;color:#476f9b!important}
+html body .records-panel .table-scroll{scrollbar-color:#bdcadb #f5f7fb;scrollbar-width:thin}
+html body .upgrade-section{border-radius:16px!important;border-color:var(--line)!important;box-shadow:var(--shadow)!important}
+html body .last5-day{border-color:var(--line);box-shadow:none;border-radius:12px;padding:16px}
+html body .last5-day-head strong{font-size:12px;color:#294768}
+html body .last5-metric{background:#f8fafd;border-color:#edf1f6;border-radius:9px;padding:12px}
+html body .last5-metric b{font-size:18px;letter-spacing:-.4px;font-variant-numeric:tabular-nums}
+html body .records-loading-state{min-height:300px;color:#315e91;gap:14px;background:radial-gradient(ellipse at center,#f2f7ff,#fff 70%)}
+html body .tts-login{background:radial-gradient(ellipse at 25% 20%,#294b70,#112840 80%)}
+html body .tts-card{border:1px solid #ffffff45;border-radius:22px;padding:36px;box-shadow:0 25px 80px #081c3655}
+html body .tts-submit{background:#2563a8;border-radius:10px;min-height:44px}
+html body .tts-field input{border-radius:10px}
+html body button:focus-visible{outline:2px solid #4d8ae5;outline-offset:3px}
+@media(min-width:1400px){html body .stats-grid{gap:14px}html body .stat{padding:18px 16px}}
+@media(max-width:1200px){html body .analytics-grid{grid-template-columns:1fr}html body .io-wrap{justify-content:flex-start;padding:22px}html body main.container{padding:20px}html body .stat{min-height:80px}}
+@media(max-width:760px){html body .topbar{padding:18px 16px;min-height:86px}html body .brand h1{font-size:20px}html body main.container{padding:14px 12px 26px}html body main.container>.premium-tabs{margin-bottom:16px!important}html body .premium-tabs button{padding:10px 12px!important;font-size:11px!important}html body .stat{padding:14px 12px}html body .stat strong{font-size:23px}html body .records-head{padding:16px;align-items:flex-start;flex-direction:column}html body .filters{display:grid;width:100%;grid-template-columns:1fr 1fr}html body .filters input{width:100%;grid-column:1/-1}html body .filters select{width:100%;min-width:0}html body .metric-grid{grid-template-columns:1fr 1fr}html body .metric{padding:15px 12px}html body .panel-body{padding:18px}html body .tts-card{padding:28px 24px}}
