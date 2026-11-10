@@ -2,7 +2,7 @@
 if(window.ticketPremiumExperienceReady)return;window.ticketPremiumExperienceReady=true;
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 let viewGeneration=0;
-function changeView(view){if(reduced)return;const generation=++viewGeneration;[...document.querySelectorAll('main.container>.premium-view-section:not(.premium-view-hidden),.workspace-grid:not(.premium-view-hidden)')].filter((el,index,list)=>!list.some(parent=>parent!==el&&parent.contains(el))).forEach(el=>{el.classList.remove('premium-section-enter');requestAnimationFrame(()=>{if(generation===viewGeneration)el.classList.add('premium-section-enter')})})}
+function changeView(view){if(reduced||view==='tickets')return;const generation=++viewGeneration;[...document.querySelectorAll('main.container>.premium-view-section:not(.premium-view-hidden),.workspace-grid:not(.premium-view-hidden)')].filter((el,index,list)=>!list.some(parent=>parent!==el&&parent.contains(el))).forEach(el=>{el.classList.remove('premium-section-enter');requestAnimationFrame(()=>{if(generation===viewGeneration)el.classList.add('premium-section-enter')})})}
 changeView(document.documentElement.dataset.trackerView||'dashboard');
 // Replay metric counters on each tab opening without touching ticket identifiers or stored data.
 const running=new Map();let counterFrame=0,animationFrame=0,waitingForData=true;
