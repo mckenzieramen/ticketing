@@ -60,3 +60,14 @@ html[data-tracker-view="tickets"] #ticketTableBody tr:not(:has(.attempt-wrap)),
 html[data-tracker-view="tickets"] #ticketTableBody tr:not(:has(.ticket-actions-wrap)){visibility:hidden!important}
 html[data-tracker-view="tickets"] .records-panel .table-scroll{min-height:420px;contain:layout paint;overflow-anchor:none!important}
 html[data-tracker-view="tickets"] #ticketTableBody{overflow-anchor:none!important}
+
+/* Keep records hidden until account hydration and the table render finish. */
+.records-loading-state{display:none;min-height:240px;align-items:center;justify-content:center;flex-direction:column;gap:12px;padding:30px;color:#176fbd;text-align:center;font-family:Inter,sans-serif}
+.records-loading-state strong{font-size:14px}.records-loading-state small{font-size:11px;color:#718096}
+.records-loading .records-loading-state,.records-load-error .records-loading-state{display:flex}
+.records-loading .table-scroll,.records-loading #emptyState,.records-load-error .table-scroll,.records-load-error #emptyState{display:none!important}
+.records-spinner{width:30px;height:30px;border:3px solid #dbeafe;border-top-color:#0b83e6;border-radius:50%;animation:records-spin .8s linear infinite}
+.records-load-error .records-spinner{display:none}
+.records-loading-state button{border:0;border-radius:7px;background:#0b83e6;color:white;padding:9px 16px;cursor:pointer;font:700 12px Inter,sans-serif}
+@keyframes records-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.records-spinner{animation-duration:2s}}

@@ -96,6 +96,7 @@ async function migrateIfNeeded(user){
  applyCache(user,seed);return seed
 }
 async function loadAccount(user){
+ window.TicketRecordsLoading?.start();
  if(sync)sync.textContent='Loading Firebase…';
  await migrateIfNeeded(user);
  if(unsubscribe)unsubscribe();
@@ -113,7 +114,8 @@ async function loadAccount(user){
   void saveState(user,localState()).catch(console.error);
   if(sync)sync.textContent='Firebase live ✓'
  },e=>{console.error('Firebase realtime sync failed',e);if(sync)sync.textContent='Firebase permission needed'});
- if(sync)sync.textContent='Firebase live ✓'
+ if(sync)sync.textContent='Firebase live ✓';
+ window.TicketRecordsLoading?.ready();
 }
 
 async function permanentlyDeleteTicket(id){
@@ -152,4 +154,4 @@ window.addEventListener('ticket-record-deleted',e=>{
 
 form.addEventListener('submit',async e=>{e.preventDefault();errorBox.style.display='none';const btn=form.querySelector('button');btn.disabled=true;btn.textContent='Signing in…';try{await setPersistence(auth,remember.checked?browserLocalPersistence:browserSessionPersistence);await signInWithEmailAndPassword(auth,email.value.trim(),password.value);password.value='';email.value=''}catch(e){error('Unable to sign in. Check the email/password in Firebase Authentication.')}finally{btn.disabled=false;btn.textContent='Sign In'}});
 logout?.addEventListener('click',async()=>{clearTimeout(saveTimer);try{if(auth.currentUser)await flushSave(auth.currentUser)}catch(e){console.error(e)}if(unsubscribe){unsubscribe();unsubscribe=null}if(auth.currentUser)sessionStorage.removeItem('tts.firebaseHydrated.'+auth.currentUser.uid);password.value='';email.value='';remember.checked=false;await signOut(auth)});
-onAuthStateChanged(auth,user=>{gate.classList.remove('tts-checking');if(!user){clearTimeout(saveTimer);if(unsubscribe){unsubscribe();unsubscribe=null}gate.classList.remove('hidden');email.value='';password.value='';remember.checked=false;if(logout)logout.hidden=true;if(sync)sync.textContent='';return}gate.classList.add('hidden');if(logout)logout.hidden=false;const profile=document.querySelector('.profile strong');if(profile)profile.textContent=user.email||'User';loadAccount(user).catch(e=>{console.error('Firebase account load failed',e);if(sync)sync.textContent='Firebase permission needed'})});
+onAuthStateChanged(auth,user=>{gate.classList.remove('tts-checking');if(!user){clearTimeout(saveTimer);if(unsubscribe){unsubscribe();unsubscribe=null}gate.classList.remove('hidden');email.value='';password.value='';remember.checked=false;if(logout)logout.hidden=true;if(sync)sync.textContent='';return}gate.classList.add('hidden');if(logout)logout.hidden=false;const profile=document.querySelector('.profile strong');if(profile)profile.textContent=user.email||'User';loadAccount(user).catch(e=>{window.TicketRecordsLoading?.fail();console.error('Firebase account load failed',e);if(sync)sync.textContent='Firebase permission needed'})});
