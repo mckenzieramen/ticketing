@@ -6,7 +6,17 @@ const pad=n=>String(n).padStart(2,'0'),fmt=d=>`${d.getFullYear()}-${pad(d.getMon
 const parse=v=>{const m=String(v||'').match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})$/);return m?new Date(+m[1],+m[2]-1,+m[3],+m[4],+m[5],+m[6]):null};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function read(){try{const v=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
-function latestFive(){return read().slice().sort((a,b)=>String(b.creation||'').localeCompare(String(a.creation||''))).slice(0,5)}
+function addedTime(ticket){
+  const saved=Date.parse(ticket.addedAt||'');
+  if(Number.isFinite(saved))return saved;
+  const creation=String(ticket.ticketCreation||ticket.creation||'').trim().replace(' ','T');
+  const date=Date.parse(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/.test(creation)?creation+'+08:00':creation);
+  return Number.isFinite(date)?date:0;
+}
+function latestFive(records=read()){
+  return records.map(ticket=>({ticket,time:addedTime(ticket)}))
+    .sort((a,b)=>b.time-a.time).slice(0,5).map(({ticket})=>ticket);
+}
 function save(list,source='recent'){localStorage.setItem(KEY,JSON.stringify(list));window.ticketInstantUISync?.(source);window.dispatchEvent(new CustomEvent('ticket-record-saved',{detail:{tickets:list,source}}));window.dispatchEvent(new CustomEvent('ticket-data-updated',{detail:{tickets:list,source}}))}
 function normalizeAttempts(t){if(!Array.isArray(t.callAttemptHistory))t.callAttemptHistory=[];if(!t.callAttemptHistory.length){const n=Math.max(1,Number(t.callAttempts)||1);for(let i=0;i<n;i++)t.callAttemptHistory.push({attempt:i+1,time:i?null:(t.creation||t.stampedTime||null),legacy:i>0})}t.callAttemptHistory.forEach((a,i)=>a.attempt=i+1);t.callAttempts=t.callAttemptHistory.length;return t}
 function remaining(t){if(!t||t.status!=='Solved'||!t.expectedClose)return'';const d=parse(t.expectedClose);if(!d)return'';const ms=d-Date.now();if(ms<=0)return'Closing…';const n=Math.ceil(ms/1000);return `${pad(Math.floor(n/3600))}:${pad(Math.floor(n%3600/60))}:${pad(n%60)}`}
@@ -19,5 +29,9 @@ function row(t,i){normalizeAttempts(t);const st=t.status||'Open',pickup=t.pickup
 let lastRows='';function render(){const p=ensure();if(!p)return;const body=p.querySelector('tbody'),list=latestFive(),signature=JSON.stringify(list);if(signature===lastRows&&body.children.length)return;lastRows=signature;body.innerHTML=list.length?list.map(row).join(''):'<tr><td colspan="12">No recent tickets yet.</td></tr>'}
 function changeAttempt(id,delta){const list=read(),t=list.find(x=>String(x.id)===String(id));if(!t)return;normalizeAttempts(t);if(delta>0)t.callAttemptHistory.push({attempt:t.callAttemptHistory.length+1,time:fmt(new Date())});else if(delta<0&&t.callAttemptHistory.length>1)t.callAttemptHistory.pop();else return;normalizeAttempts(t);t.lastEditedAt=new Date().toISOString();save(list,'recent-attempt');render()}
 const p=ensure();if(p){p.addEventListener('click',e=>{const b=e.target.closest('[data-recent-attempt]');if(b){e.preventDefault();e.stopPropagation();changeAttempt(b.dataset.id,b.dataset.recentAttempt==='plus'?1:-1);return}const a=e.target.closest('[data-recent-action]');if(!a)return;e.preventDefault();e.stopPropagation();const id=a.dataset.id,k=a.dataset.recentAction;if(k==='edit'){if(typeof window.openAllTicketsEditModal==='function')window.openAllTicketsEditModal(id);else window.editTicket?.(id)}else if(k==='view')window.viewTicket?.(id);else if(k==='delete')window.deleteTicket?.(id)},true);p.addEventListener('change',e=>{const sel=e.target.closest('.ticket-status-select');if(!sel)return;const list=read(),t=list.find(x=>String(x.id)===String(sel.dataset.id));if(!t)return;const old=t.status||'Open',st=sel.value,n=fmt(new Date());if(st==='Solved'){if(old!=='Solved'||!t.solvedTime)t.solvedTime=n;const d=parse(t.solvedTime);if(d&&!t.expectedClose)t.expectedClose=fmt(new Date(d.getTime()+86400000))}else if(st==='Merged'){if(!t.closedTime)t.closedTime=n;t.closeReason=t.closeReason||'Merged'}else if(st==='Closed'){if(!t.closedTime)t.closedTime=n;t.closeReason=t.closeReason||'Closed manually'}t.status=st;t.lastEditedAt=new Date().toISOString();save(list,'recent-status');render()},true)}
-let renderFrame=0;function schedule(){if(renderFrame)return;renderFrame=requestAnimationFrame(()=>{renderFrame=0;render()})}render();['ticket-record-saved','ticket-ui-updated','ticket-data-updated','ticket-live-sync','ticket-state-bridge-synced'].forEach(n=>window.addEventListener(n,schedule));setInterval(()=>{const map=new Map(read().map(t=>[String(t.id),t]));document.querySelectorAll('#recentTicketsList tr[data-ticket-id]').forEach(r=>{const t=map.get(r.dataset.ticketId),x=r.querySelector('.solved-countdown');if(t&&x){const v=remaining(t);x.textContent=v?`Auto close in ${v}`:''}})},1000);
+let renderFrame=0;function schedule(){if(renderFrame)return;renderFrame=requestAnimationFrame(()=>{renderFrame=0;render()})}render();['ticket-record-saved','ticket-ui-updated','ticket-data-updated','ticket-live-sync','ticket-state-bridge-synced'].forEach(n=>window.addEventListener(n,schedule));
+window.addEventListener('firebase-memory-write',event=>{
+  if(event.detail?.key===KEY||event.detail?.key==='*')schedule();
+});
+window.addEventListener('tracker-view-changed',schedule);setInterval(()=>{const map=new Map(read().map(t=>[String(t.id),t]));document.querySelectorAll('#recentTicketsList tr[data-ticket-id]').forEach(r=>{const t=map.get(r.dataset.ticketId),x=r.querySelector('.solved-countdown');if(t&&x){const v=remaining(t);x.textContent=v?`Auto close in ${v}`:''}})},1000);
 })();
