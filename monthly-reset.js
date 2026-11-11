@@ -14,11 +14,13 @@ const newMonth=active!==current;
 const style=document.createElement('style');style.textContent=`.month-tools{display:flex;align-items:center;gap:8px}.month-chip{border:1px solid #dbe6f1;background:#f8fbff;color:#456078;border-radius:9px;padding:7px 10px;font:700 11px Inter,sans-serif;white-space:nowrap}.month-reset-btn{border:1px solid #dbe6f1;background:#fff;color:#34506a;border-radius:9px;padding:7px 11px;font:750 11px Inter,sans-serif;cursor:pointer;transition:.15s ease}.month-reset-btn:hover{background:#f4f8fc;border-color:#cbd9e7}.month-reset-btn.attention{background:#fff7ed;border-color:#fed7aa;color:#b45309}.mrm-backdrop{position:fixed;inset:0;z-index:2147483646;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(4,15,31,.58);backdrop-filter:blur(8px);opacity:0;visibility:hidden;pointer-events:none;transition:.2s}.mrm-backdrop.open{opacity:1;visibility:visible;pointer-events:auto}.mrm-card{width:min(460px,calc(100vw - 32px));background:#fff;border:1px solid #e1e9f2;border-radius:22px;padding:26px;box-shadow:0 30px 90px rgba(3,24,51,.3);font-family:Inter,sans-serif;transform:translateY(12px) scale(.97);transition:.2s}.mrm-backdrop.open .mrm-card{transform:none}.mrm-icon{width:50px;height:50px;border-radius:15px;display:grid;place-items:center;background:#edf6ff;color:#1677d2;font-size:23px;font-weight:800}.mrm-card h2{margin:15px 0 7px;color:#102a43;font-size:20px}.mrm-card p{margin:0;color:#66788c;font-size:13px;line-height:1.6}.mrm-summary{margin:18px 0;padding:13px 14px;border:1px solid #e4ebf3;border-radius:12px;background:#f8fafc;display:grid;gap:8px}.mrm-row{display:flex;justify-content:space-between;gap:14px;font-size:12px;color:#5d7186}.mrm-row strong{color:#173b57}.mrm-note{padding:10px 12px;border-radius:10px;background:#effaf4;color:#24734a;font:600 11px/1.5 Inter,sans-serif}.mrm-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}.mrm-actions button{border:0;border-radius:11px;padding:12px 15px;font:750 13px Inter,sans-serif;cursor:pointer}.mrm-cancel{background:#eef3f8;color:#334e68}.mrm-confirm{background:linear-gradient(135deg,#147ee8,#075fbd);color:#fff;box-shadow:0 9px 20px rgba(20,126,232,.22)}`;document.head.appendChild(style);
 const head=document.querySelector('.records-head .filters');if(!head)return;
 const tools=document.createElement('div');tools.className='month-tools';tools.innerHTML=`<span class="month-chip">${monthName(current)}</span><button type="button" class="month-reset-btn${newMonth?' attention':''}">${newMonth?'New Month · Reset':'Reset Month'}</button>`;head.prepend(tools);
-const modal=document.createElement('div');modal.className='mrm-backdrop';modal.innerHTML=`<div class="mrm-card" role="dialog" aria-modal="true"><div class="mrm-icon">↻</div><h2>Start a fresh month?</h2><p>This resets the active Ticket Tracker counters and records for the new month. Your current tickets and attendance are archived first.</p><div class="mrm-summary"><div class="mrm-row"><span>Period to archive</span><strong>${monthName(active)}</strong></div><div class="mrm-row"><span>New period</span><strong>${monthName(current)}</strong></div><div class="mrm-row"><span>Tickets to archive</span><strong id="mrmCount">0</strong></div></div><div class="mrm-note">Your records are saved to the monthly archive in Firebase.</div><div class="mrm-actions"><button type="button" class="mrm-cancel">Cancel</button><button type="button" class="mrm-confirm">Archive & Reset</button></div></div>`;document.body.appendChild(modal);
+const modal=document.createElement('div');modal.className='mrm-backdrop';modal.innerHTML=`<div class="mrm-card" role="dialog" aria-modal="true"><div class="mrm-icon">↻</div><h2>Start a fresh month?</h2><p>Your current tickets and attendance are archived. Unresolved tickets stay in All Tickets for the next period.</p><div class="mrm-summary"><div class="mrm-row"><span>Period to archive</span><strong>${monthName(active)}</strong></div><div class="mrm-row"><span>New period</span><strong>${monthName(current)}</strong></div><div class="mrm-row"><span>Tickets to archive</span><strong id="mrmCount">0</strong></div><div class="mrm-row"><span>Tickets to carry forward</span><strong id="mrmCarryCount">0</strong></div></div><div class="mrm-note">Your records are saved to the monthly archive in Firebase.</div><div class="mrm-actions"><button type="button" class="mrm-cancel">Cancel</button><button type="button" class="mrm-confirm">Archive & Reset</button></div></div>`;document.body.appendChild(modal);
 const read=(k,fallback)=>{try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(fallback))}catch{return fallback}};
 function open(){
-  modal.querySelector('#mrmCount').textContent=read(TICKET_KEY,[]).length;
   const period=activePeriod(archiveData());
+  const tickets=uniqueTickets(period.tickets);
+  modal.querySelector('#mrmCount').textContent=tickets.length;
+  modal.querySelector('#mrmCarryCount').textContent=tickets.filter(isUnresolved).length;
   modal.querySelector('.mrm-row strong').textContent=rangeLabel(period.start,period.end);
   modal.classList.add('open');
 }
@@ -44,7 +46,17 @@ function uniqueTickets(records){
   }
   return [...byTicket.values()];
 }
+const terminalStatuses=new Set(['solved','closed','merged']);
+const isUnresolved=ticket=>!terminalStatuses.has(String(ticket.status||'').trim().toLowerCase());
 const ticketDay=ticket=>dayOf(ticket?.creation)||dayOf(ticket?.stampedTime);
+const ticketPeriodDay=ticket=>dayOf(ticket?.carriedIntoPeriod)||ticketDay(ticket);
+function carryUnresolved(tickets,nextStart){
+  return tickets.filter(isUnresolved).map(ticket=>({
+    ...ticket,
+    carriedIntoPeriod:nextStart,
+    carriedAttemptBaseline:attemptCount(ticket)
+  }));
+}
 function resetDay(timestamp){
   const date=new Date(timestamp||'');
   return Number.isNaN(date.getTime())?'':phDate.format(date);
@@ -88,13 +100,14 @@ confirmReset.addEventListener('click',()=>{
   const period=activePeriod(archives);
   const archivedAt=new Date().toISOString();
   const archiveKey=period.start.slice(0,7)+'-'+archivedAt;
+  const tickets=uniqueTickets(period.tickets);
   pendingReset={archiveKey,archivedAt};
   archives[archiveKey]={
     archivedAt,periodStart:period.start,periodEnd:period.end,periodStartInferred:period.inferred,
-    tickets:uniqueTickets(period.tickets),attendance:[...new Set(period.attendance)]
+    tickets,attendance:[...new Set(period.attendance)]
   };
   localStorage.setItem(ARCHIVE_KEY,JSON.stringify(archives));
-  localStorage.setItem(TICKET_KEY,'[]');
+  localStorage.setItem(TICKET_KEY,JSON.stringify(carryUnresolved(tickets,period.end)));
   localStorage.setItem(ATTENDANCE_KEY,'[]');
   localStorage.setItem(PERIOD_START_KEY,period.end);
   localStorage.setItem(MONTH_KEY,period.end.slice(0,7));
@@ -170,16 +183,17 @@ function renderSummary(){
   select.value=selected;
   const period=periods.get(selected);
   const within=day=>day&&day>=period.start&&day<=period.end;
-  const rows=uniqueTickets(period.tickets.filter(ticket=>within(ticketDay(ticket))));
+  const rows=uniqueTickets(period.tickets.filter(ticket=>within(ticketPeriodDay(ticket))));
   const days=new Set(period.attendance.filter(within)).size;
-  const pickups=validPickups(rows);
+  const carried=rows.filter(ticket=>ticket.carriedIntoPeriod).length;
+  const pickups=validPickups(rows.filter(ticket=>!ticket.carriedIntoPeriod));
   const passed=pickups.filter(seconds=>seconds<=20).length;
-  const attempts=rows.reduce((total,ticket)=>total+attemptCount(ticket),0);
+  const attempts=rows.reduce((total,ticket)=>total+Math.max(0,attemptCount(ticket)-(Number(ticket.carriedAttemptBaseline)||0)),0);
   const averageClose=mean(rows.map(closeDays).filter(value=>value!==null),2);
   const range=rangeLabel(period.start,period.end);
   summary.querySelector('[data-month-range]').textContent=period.inferred?`${range} · Start based on first available record`:range;
   const metrics=[
-    ['Total tickets',rows.length,`${rows.filter(ticket=>callType(ticket,'Inbound')).length} inbound · ${rows.filter(ticket=>callType(ticket,'Outbound')).length} outbound`],
+    ['Total tickets',rows.length,`${rows.filter(ticket=>callType(ticket,'Inbound')).length} inbound · ${rows.filter(ticket=>callType(ticket,'Outbound')).length} outbound · ${carried} carried forward`],
     ['Pickup rate',pickups.length?`${(passed/pickups.length*100).toFixed(2)}%`:'—',`${passed}/${pickups.length} valid inbound pickups ≤ 20s`],
     ['Avg. pickup',pickups.length?`${mean(pickups)} sec`:'—','Valid inbound pickups'],
     ['Call attempts',attempts,'Recorded on tickets in this period'],
