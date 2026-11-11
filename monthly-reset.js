@@ -141,7 +141,9 @@ style.textContent+=`
 .records-month-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:8px}
 .records-month-stat{display:grid;gap:3px;padding:9px 10px;border:1px solid #e9e3d7;border-radius:9px;background:#fff}
 .records-month-stat span,.records-month-stat small{font-size:11px;color:#586860}
-.records-month-stat strong{font-size:17px;font-variant-numeric:tabular-nums}
+.records-month-stat strong,.records-month-stat strong span{color:inherit;font-size:17px;font-variant-numeric:tabular-nums}
+.records-month-summary .count-announcement{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.records-month-summary [data-month-status]{font-variant-numeric:tabular-nums}
 .records-month-summary [data-month-status]{margin-top:10px}
 .records-loading .records-month-summary{display:none}
 .records-panel [data-metric-tone="good"]{--metric-text:#166044;--metric-surface:#e9f7ee;--metric-border:#9acfb1}
@@ -162,6 +164,54 @@ try{
 }catch{}
 const grid=summary.querySelector('.records-month-grid');
 const statusLine=summary.querySelector('[data-month-status]');
+const motionPreference=window.matchMedia('(prefers-reduced-motion: reduce)');
+const pendingCounts=new Set();
+const countFrames=new WeakMap();
+let summaryVisible=false;
+function countUp(element){
+  pendingCounts.delete(element);
+  cancelAnimationFrame(countFrames.get(element)||0);
+  const target=element.dataset.countTarget;
+  const match=target.match(/^(\d+)(?:\.(\d+))?(.*)$/);
+  if(!summaryVisible||motionPreference.matches||!match||Number(match[1]+'.'+(match[2]||'0'))===0){
+    element.textContent=target;
+    return;
+  }
+  const digits=match[2]?.length||0;
+  const actual=Number(match[1]+'.'+(match[2]||'0'));
+  const suffix=match[3];
+  let start;
+  element.textContent=(0).toFixed(digits)+suffix;
+  function tick(time){
+    start??=time;
+    const progress=Math.min(1,(time-start)/800);
+    const eased=1-Math.pow(1-progress,3);
+    const display=actual*eased;
+    element.textContent=progress===1?target:(digits?display.toFixed(digits):String(Math.floor(display)))+suffix;
+    if(progress<1&&summaryVisible&&!motionPreference.matches)countFrames.set(element,requestAnimationFrame(tick));
+    else{element.textContent=target;countFrames.delete(element);}
+  }
+  countFrames.set(element,requestAnimationFrame(tick));
+}
+function updateCount(element,value){
+  const next=String(value);
+  if(element.dataset.countTarget===next)return;
+  element.dataset.countTarget=next;
+  element.nextElementSibling.textContent=next;
+  if(summaryVisible)countUp(element);
+  else{
+    cancelAnimationFrame(countFrames.get(element)||0);
+    countFrames.delete(element);
+    element.textContent=next;
+    pendingCounts.add(element);
+  }
+}
+if(typeof IntersectionObserver==='function'){
+  new IntersectionObserver(([entry])=>{
+    summaryVisible=entry.isIntersecting;
+    if(summaryVisible)pendingCounts.forEach(countUp);
+  }).observe(summary);
+}else summaryVisible=true;
 const callType=(ticket,type)=>[type,type+' Call'].includes(ticket.callType);
 const mean=(values,digits=1)=>values.length?(values.reduce((total,value)=>total+value,0)/values.length).toFixed(digits):null;
 const validPickups=records=>records.filter(ticket=>callType(ticket,'Inbound')&&ticket.pickupSeconds!=null&&String(ticket.pickupSeconds).trim()!=='')
@@ -215,20 +265,19 @@ function renderSummary(){
     ['Avg. closing time',averageClose===null?'—':`${averageClose} days`,'1.5 days target',tone(averageClose===null?null:closingTimes.reduce((sum,value)=>sum+value,0)/closingTimes.length<=1.5)]
   ];
   if(!grid.children.length){
-    grid.innerHTML=metrics.map(([label])=>`<div class="records-month-stat"><span>${label}</span><strong></strong><small></small></div>`).join('');
+    grid.innerHTML=metrics.map(([label])=>`<div class="records-month-stat"><span>${label}</span><strong><span aria-hidden="true" data-summary-count></span><span class="count-announcement"></span></strong><small></small></div>`).join('');
+    statusLine.innerHTML=statuses.map(status=>`<span>${status} <span aria-hidden="true" data-summary-count></span><span class="count-announcement"></span></span>`).join(' · ');
   }
-  const motion=typeof window.matchMedia==='function'&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   metrics.forEach(([,value,detail,metricTone='neutral'],index)=>{
     const card=grid.children[index];
     const [,number,note]=card.children;
-    const next=String(value);
-    const changed=number.textContent!==next||card.dataset.metricTone!==metricTone;
-    card.dataset.metricTone=metricTone;
-    if(number.textContent!==next)number.textContent=next;
+    if(card.dataset.metricTone!==metricTone)card.dataset.metricTone=metricTone;
+    updateCount(number.firstElementChild,value);
     if(note.textContent!==detail)note.textContent=detail;
-    if(changed&&motion)number.animate?.([{opacity:.45,transform:'translateY(3px)'},{opacity:1,transform:'translateY(0)'}],{duration:220,easing:'ease-out'});
   });
-  statusLine.textContent=statuses.map(status=>`${status} ${rows.filter(ticket=>ticket.status===status).length}`).join(' · ');
+  [...statusLine.children].forEach((item,index)=>{
+    updateCount(item.firstElementChild,rows.filter(ticket=>ticket.status===statuses[index]).length);
+  });
   const isNewMonth=activeMonth()!==current;
   const resetButton=tools.querySelector('button');
   resetButton.classList.toggle('attention',isNewMonth);
