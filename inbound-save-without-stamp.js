@@ -14,7 +14,8 @@ function life(t,status,now){if(status==='Solved'&&t?.status!=='Solved'){const d=
 function clear(){['stampTicket','answerTime'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});const call=document.getElementById('stampedTime');if(call){call.value='2026-';call.dataset.utc=''}const s=document.getElementById('stampStatus');if(s)s.value='Open';const box=document.getElementById('pickupResult');if(box){box.className='pickup-result empty';box.innerHTML='<div><span class="bolt">ϟ</span><div><small>Pickup Time</small><strong>Waiting for timestamps</strong><em>Enter PH Time of call and UTC Started at.</em></div></div>'}}
 btn.addEventListener('click',e=>{
  const number=(document.getElementById('stampTicket')?.value||'').trim();
- const timeOfCallPH=(document.getElementById('stampedTime')?.value||'').trim();
+ const callInput=(document.getElementById('stampedTime')?.value||'').trim();
+ const timeOfCallPH=callInput==='2026-'?'':callInput;
  const answerRaw=(document.getElementById('answerTime')?.value||'').trim();
  const status=document.getElementById('stampStatus')?.value||'Open';
  if(!number&&!timeOfCallPH&&!answerRaw&&status==='Open')return;
@@ -29,7 +30,7 @@ btn.addEventListener('click',e=>{
  const lifecycle=life(t,status,now);
  // Ticket Creation is when the ticket record was saved/created. Time of call is kept separately.
  const ticketCreation=t?.ticketCreation||t?.creation||now;
- if(!t){t={id:crypto.randomUUID(),number,callType:'Inbound Call',creation:now,ticketCreation:now,status,...lifecycle,pickupSeconds:pickup,timeOfCallPH:clean(timeOfCallPH),timeOfCallUTC,answerTime:answerUTC,stampOnly:false};tickets.unshift(t)}
+ if(!t){t={id:crypto.randomUUID(),addedAt:new Date().toISOString(),number,callType:'Inbound Call',creation:now,ticketCreation:now,status,...lifecycle,pickupSeconds:pickup,timeOfCallPH:clean(timeOfCallPH),timeOfCallUTC,answerTime:answerUTC,stampOnly:false};tickets.unshift(t)}
  else{Object.assign(t,{number,callType:'Inbound Call',status,...lifecycle,ticketCreation,creation:ticketCreation,timeOfCallPH:timeOfCallPH?clean(timeOfCallPH):(t.timeOfCallPH||''),timeOfCallUTC:timeOfCallUTC||(t.timeOfCallUTC||''),answerTime:answerUTC||t.answerTime||'',pickupSeconds:pickup??t.pickupSeconds??null,stampOnly:false})}
  write(tickets);clear();
  if(timeOfCallPH&&answerRaw&&pickup!==null)toast(`Inbound saved. Pickup Time: ${pickup} seconds.`);
