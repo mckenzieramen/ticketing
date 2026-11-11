@@ -9,7 +9,13 @@ function fmt(d){return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDat
 function days(a,b){a=parse(a);b=parse(b);return !a||!b||b<a?'—':`${((b-a)/86400000).toFixed(2)} days`}
 function read(){try{const v=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
 function write(v,source){localStorage.setItem(KEY,JSON.stringify(v));window.ticketInstantUISync?.(source);window.dispatchEvent(new CustomEvent('ticket-record-saved',{detail:{tickets:v,source}}));window.dispatchEvent(new CustomEvent('ticket-data-updated',{detail:{tickets:v,source}}))}
-function filtered(list){const q=($('searchInput')?.value||'').trim().toLowerCase(),ty=$('typeFilter')?.value||'',st=$('statusFilter')?.value||'';return list.filter(t=>(!q||String(t.number||'').toLowerCase().includes(q))&&(!ty||t.callType===ty)&&(!st||t.status===st))}
+function filtered(list){
+  const q=($('searchInput')?.value||'').trim().toLowerCase(),type=$('typeFilter')?.value||'',status=$('statusFilter')?.value||'';
+  const rows=list.filter(ticket=>(!q||String(ticket.number||'').toLowerCase().includes(q))&&(!type||ticket.callType===type)&&(!status||ticket.status===status));
+  if(!$('followUpFilter')?.checked)return rows;
+  return rows.filter(ticket=>!terminalStatus(ticket)&&(ticket.carriedIntoPeriod||recordTone(ticket)==='critical'))
+    .sort((a,b)=>(recordCreatedAt(a)||Infinity)-(recordCreatedAt(b)||Infinity));
+}
 function norm(t){if(!Array.isArray(t.callAttemptHistory))t.callAttemptHistory=[];if(!t.callAttemptHistory.length){const n=Math.max(1,Number(t.callAttempts)||1);for(let i=0;i<n;i++)t.callAttemptHistory.push({attempt:i+1,time:i?null:(t.creation||t.stampedTime||null),legacy:i>0})}t.callAttemptHistory.forEach((a,i)=>a.attempt=i+1);t.callAttempts=t.callAttemptHistory.length;return t}
 function remaining(t){if(t.status!=='Solved'||!t.expectedClose)return'';const d=parse(t.expectedClose);if(!d)return'';const n=Math.ceil((d-Date.now())/1000);if(n<=0)return'Closing…';return `${pad(Math.floor(n/3600))}:${pad(Math.floor(n%3600/60))}:${pad(n%60)}`}
 function statusHTML(t){const c=color(t.status),left=remaining(t);return `<div class="ticket-status-control"><select class="ticket-status-select all-ticket-status" data-id="${esc(t.id)}" style="--status-color:${c};--status-soft:${c}18">${STATUSES.map(s=>`<option value="${s}"${s===t.status?' selected':''}>${s}</option>`).join('')}</select><small class="solved-countdown all-solved-countdown">${left?`Auto close in ${left}`:''}</small></div>`}
@@ -17,10 +23,13 @@ function attemptsHTML(t){norm(t);const n=t.callAttemptHistory.length,id=esc(t.id
 function actionsHTML(t){const id=esc(t.id);return `<div class="ticket-actions-wrap"><button type="button" class="action-btn edit" data-ticket-action="edit" data-id="${id}" title="Edit">✎</button><button type="button" class="action-btn view" data-ticket-action="view" data-id="${id}" title="View">◉</button><button type="button" class="action-btn delete" data-ticket-action="delete" data-id="${id}" title="Delete">×</button></div>`}
 const FOLLOW_UP_MS=36*60*60*1000;
 const terminalStatus=t=>['Solved','Closed','Merged'].includes(t.status);
+function recordCreatedAt(ticket){
+  const raw=String(ticket.creation||'').trim().replace(' ','T');
+  return Date.parse(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/.test(raw)?raw+'+08:00':raw);
+}
 function recordTone(ticket,now=Date.now()){
   if(terminalStatus(ticket))return 'good';
-  const raw=String(ticket.creation||'').trim().replace(' ','T');
-  const created=Date.parse(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/.test(raw)?raw+'+08:00':raw);
+  const created=recordCreatedAt(ticket);
   return Number.isFinite(created)&&now-created>=FOLLOW_UP_MS?'critical':'neutral';
 }
 function pickupBadge(ticket){
@@ -54,5 +63,7 @@ function attempt(id,d){const list=read(),t=list.find(x=>String(x.id)===String(id
 function setStatus(id,st){const list=read(),t=list.find(x=>String(x.id)===String(id));if(!t)return;const n=now();if(!STATUSES.includes(st))return;if(!['Solved','Closed','Merged'].includes(st)){t.solvedTime='';t.expectedClose='';t.closedTime='';t.closeReason=''}if(st==='Solved'){if(t.status!=='Solved'||!t.solvedTime)t.solvedTime=n;if(!t.expectedClose){const d=parse(t.solvedTime);if(d)t.expectedClose=fmt(new Date(d.getTime()+86400000))}}else if(st==='Merged'){t.closedTime=t.closedTime||n;t.closeReason=t.closeReason||'Merged'}else if(st==='Closed'){t.closedTime=t.closedTime||n;t.closeReason=t.closeReason||'Closed manually'}t.status=st;t.lastEditedAt=new Date().toISOString();all=list;const rows=filtered(all),i=rows.findIndex(x=>String(x.id)===String(id));patch(t,i);write(list,'all-ticket-status');requestAnimationFrame(()=>{all=read();render(false)})}
 const body=$('ticketTableBody');if(body){body.addEventListener('click',e=>{const a=e.target.closest('[data-attempt-action]');if(a){e.preventDefault();e.stopImmediatePropagation();attempt(a.dataset.id,a.dataset.attemptAction==='plus'?1:-1);return}const b=e.target.closest('[data-ticket-action]');if(!b)return;e.preventDefault();e.stopImmediatePropagation();const id=b.dataset.id,k=b.dataset.ticketAction;if(k==='edit')window.editTicket?.(id);else if(k==='view')window.viewTicket?.(id);else if(k==='delete')window.deleteTicket?.(id)},true);body.addEventListener('change',e=>{const s=e.target.closest('.all-ticket-status');if(!s)return;e.stopImmediatePropagation();setStatus(s.dataset.id,s.value)},true)}
 const observer=body?new MutationObserver(()=>{if(rendering)return;const bad=[...body.rows].some(r=>!r.dataset.ticketId||r.children.length!==12||!r.querySelector('.all-ticket-status')||!r.querySelector('.attempt-wrap')||!r.querySelector('.ticket-actions-wrap'));if(bad)schedule()}):null;if(observer)observer.observe(body,{childList:true,subtree:true});
-window.addEventListener('ticket-record-saved',e=>{if(Array.isArray(e.detail?.tickets))all=e.detail.tickets;schedule()});window.addEventListener('ticket-live-sync',schedule);window.addEventListener('tracker-view-changed',e=>{if(e.detail?.view==='tickets'){all=read();render(true)}});['searchInput','typeFilter','statusFilter'].forEach(id=>$(id)?.addEventListener(id==='searchInput'?'input':'change',schedule,{passive:true}));window.instantRenderTicketRecords=list=>{if(Array.isArray(list))all=list;render(false)};window.ticketFastPageRender=true;style();render(true);setInterval(()=>{const byId=new Map(all.map(t=>[String(t.id),t]));document.querySelectorAll('#ticketTableBody tr[data-ticket-id]').forEach(r=>{const t=byId.get(String(r.dataset.ticketId)),x=r.querySelector('.all-solved-countdown');if(t)applyRecordTone(r,t);if(t&&x){const v=remaining(t),text=v?`Auto close in ${v}`:'';if(x.textContent!==text)x.textContent=text}})},1000);
+window.addEventListener('ticket-record-saved',e=>{if(Array.isArray(e.detail?.tickets))all=e.detail.tickets;schedule()});window.addEventListener('ticket-live-sync',schedule);window.addEventListener('tracker-view-changed',e=>{if(e.detail?.view==='tickets'){all=read();render(true)}});['searchInput','typeFilter','statusFilter','followUpFilter'].forEach(id=>$(id)?.addEventListener(id==='searchInput'?'input':'change',schedule,{passive:true}));window.instantRenderTicketRecords=list=>{if(Array.isArray(list))all=list;render(false)};window.ticketFastPageRender=true;style();render(true);
+setInterval(()=>{if($('followUpFilter')?.checked)schedule()},60000);
+setInterval(()=>{const byId=new Map(all.map(t=>[String(t.id),t]));document.querySelectorAll('#ticketTableBody tr[data-ticket-id]').forEach(r=>{const t=byId.get(String(r.dataset.ticketId)),x=r.querySelector('.all-solved-countdown');if(t)applyRecordTone(r,t);if(t&&x){const v=remaining(t),text=v?`Auto close in ${v}`:'';if(x.textContent!==text)x.textContent=text}})},1000);
 })();
