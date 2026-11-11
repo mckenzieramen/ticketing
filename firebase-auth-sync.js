@@ -22,11 +22,11 @@ const gate=document.getElementById('ttsLogin'),form=document.getElementById('tts
 
 const TICKET_KEY='premiumTicketTracker.v1';
 const DELETED_KEY='premiumTicketTracker.deletedIds.v1';
-const KEYS=[TICKET_KEY,'premiumTicketTracker.attendance.v1','premiumTicketTracker.monthlyArchives.v1','premiumTicketTracker.activeMonth.v1',DELETED_KEY];
+const KEYS=[TICKET_KEY,'premiumTicketTracker.attendance.v1','premiumTicketTracker.monthlyArchives.v1','premiumTicketTracker.activeMonth.v1','premiumTicketTracker.periodStart.v1',DELETED_KEY];
 const OWNER_KEY='premiumTicketTracker.ownerUid.v1',OWNER_EMAIL_KEY='premiumTicketTracker.ownerEmail.v1',PRIMARY_EMAIL='itsclffjnd@gmail.com';
 
 function error(msg){errorBox.textContent=msg;errorBox.style.display='block'}
-function emptyValue(key){if(key==='premiumTicketTracker.activeMonth.v1')return '';if(key===DELETED_KEY)return '[]';return key.includes('monthlyArchives')?'{}':'[]'}
+function emptyValue(key){if(key==='premiumTicketTracker.activeMonth.v1'||key==='premiumTicketTracker.periodStart.v1')return '';if(key===DELETED_KEY)return '[]';return key.includes('monthlyArchives')?'{}':'[]'}
 function meaningfulRaw(key,raw){if(raw==null)return false;try{const v=JSON.parse(raw);if(Array.isArray(v))return v.length>0;if(v&&typeof v==='object')return Object.keys(v).length>0;return Boolean(v)}catch{return key==='premiumTicketTracker.activeMonth.v1'?false:String(raw).trim()!==''}}
 function parseArray(raw){try{const v=JSON.parse(raw||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
 function deletedSet(state){return new Set(parseArray(state?.[DELETED_KEY]??localStorage.getItem(DELETED_KEY)).map(String))}
