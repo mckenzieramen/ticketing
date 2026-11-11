@@ -64,7 +64,11 @@ function applyCache(user,state){
  notifyDashboard(user,'firebase-hydrate')
 }
 async function legacyCloudState(user){const snap=await getDocs(collection(db,'users',user.uid,'localBackup')),out={};snap.forEach(d=>{const x=d.data();if(x?.key)out[x.key]=x.raw});return out}
-function reportSave(phase,state){window.dispatchEvent(new CustomEvent('ticket-cloud-save',{detail:{phase,tickets:parseArray(state[TICKET_KEY])}}))}
+function reportSave(phase,state){
+ let archivedAt='';
+ try{archivedAt=Object.values(JSON.parse(state['premiumTicketTracker.monthlyArchives.v1']||'{}')).map(archive=>archive?.archivedAt||'').sort().at(-1)||''}catch{}
+ window.dispatchEvent(new CustomEvent('ticket-cloud-save',{detail:{phase,tickets:parseArray(state[TICKET_KEY]),archivedAt}}));
+}
 async function saveState(user,state=localState()){
  if(!user||hydrating)return false;
  const clean=sanitizeState(state),serialized=serialize(clean);
