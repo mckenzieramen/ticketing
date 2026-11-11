@@ -147,6 +147,7 @@ style.textContent+=`
 .records-month-summary [data-month-status]{margin-top:10px}
 .records-loading .records-month-summary{display:none}
 .records-panel [data-metric-tone="good"]{--metric-text:#166044;--metric-surface:#e9f7ee;--metric-border:#9acfb1}
+.records-panel [data-metric-tone="warning"]{--metric-text:#9a4a0d;--metric-surface:#fff3e6;--metric-border:#e9b681}
 .records-panel [data-metric-tone="critical"]{--metric-text:#a72335;--metric-surface:#fff0f1;--metric-border:#e8a5ae}
 .records-panel .records-month-stat[data-metric-tone]:not([data-metric-tone="neutral"]){background:var(--metric-surface);border-color:var(--metric-border)}
 .records-panel .records-month-stat[data-metric-tone] strong{color:var(--metric-text,inherit)}
@@ -224,6 +225,7 @@ const closeDays=ticket=>{
 };
 const statuses=['Open','Pending','On Hold','Solved','Closed','Merged'];
 const formatDate=new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'Asia/Manila'});
+const pickupTone=rate=>rate===null?'neutral':rate>=90?'good':rate>=75?'warning':'critical';
 function renderSummary(){
   const archives=archiveData();
   const periods=new Map([['active',activePeriod(archives)]]);
@@ -256,7 +258,7 @@ function renderSummary(){
   const tone=good=>good==null?'neutral':good?'good':'critical';
   const metrics=[
     ['Total tickets',rows.length,`${rows.filter(ticket=>callType(ticket,'Inbound')).length} inbound · ${rows.filter(ticket=>callType(ticket,'Outbound')).length} outbound · ${carried} carried forward`],
-    ['Pickup rate',pickups.length?`${(passed/pickups.length*100).toFixed(2)}%`:'—',`${passed}/${pickups.length} valid inbound pickups ≤ 20s · 90% goal`,tone(rate===null?null:rate>=90)],
+    ['Pickup rate',pickups.length?`${(passed/pickups.length*100).toFixed(2)}%`:'—',`${passed}/${pickups.length} valid inbound pickups ≤ 20s · 90% goal`,pickupTone(rate)],
     ['Avg. pickup',pickups.length?`${mean(pickups)} sec`:'—','20 sec target',tone(pickups.length?pickups.reduce((sum,seconds)=>sum+seconds,0)/pickups.length<=20:null)],
     ['Call attempts',attempts,'Recorded on tickets in this period'],
     ['Attendance',`${days} ${days===1?'day':'days'}`,'Unique days marked present'],
