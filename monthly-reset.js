@@ -144,6 +144,15 @@ style.textContent+=`
 .records-month-stat strong{font-size:17px;font-variant-numeric:tabular-nums}
 .records-month-summary [data-month-status]{margin-top:10px}
 .records-loading .records-month-summary{display:none}
+.records-panel [data-metric-tone="good"]{--metric-text:#166044;--metric-surface:#e9f7ee;--metric-border:#9acfb1}
+.records-panel [data-metric-tone="critical"]{--metric-text:#a72335;--metric-surface:#fff0f1;--metric-border:#e8a5ae}
+.records-panel .records-month-stat[data-metric-tone]:not([data-metric-tone="neutral"]){background:var(--metric-surface);border-color:var(--metric-border)}
+.records-panel .records-month-stat[data-metric-tone] strong{color:var(--metric-text,inherit)}
+.records-panel .pickup-pill[data-metric-tone],.records-panel .record-closing-badge[data-metric-tone]{display:inline-block;padding:3px 7px;border-radius:6px;background:var(--metric-surface)!important;color:var(--metric-text)!important}
+.records-panel tr[data-record-tone="critical"] td:first-child{box-shadow:inset 3px 0 #bc3547}
+.records-panel tr[data-record-tone="good"] td:first-child{box-shadow:inset 3px 0 #358361}
+.records-panel .record-follow-up{display:block;margin-top:3px;color:#a72335;font-size:10px;font-weight:700}
+.records-panel .record-follow-up[hidden]{display:none!important}
 `;
 const select=summary.querySelector('select');
 let resetPeriod='';
@@ -189,21 +198,36 @@ function renderSummary(){
   const pickups=validPickups(rows.filter(ticket=>!ticket.carriedIntoPeriod));
   const passed=pickups.filter(seconds=>seconds<=20).length;
   const attempts=rows.reduce((total,ticket)=>total+Math.max(0,attemptCount(ticket)-(Number(ticket.carriedAttemptBaseline)||0)),0);
-  const averageClose=mean(rows.map(closeDays).filter(value=>value!==null),2);
+  const closingTimes=rows.map(closeDays).filter(value=>value!==null);
+  const averageClose=mean(closingTimes,2);
   const range=rangeLabel(period.start,period.end);
   summary.querySelector('[data-month-range]').textContent=period.inferred?`${range} · Start based on first available record`:range;
+  const rate=pickups.length?passed/pickups.length*100:null;
+  const tone=good=>good==null?'neutral':good?'good':'critical';
   const metrics=[
     ['Total tickets',rows.length,`${rows.filter(ticket=>callType(ticket,'Inbound')).length} inbound · ${rows.filter(ticket=>callType(ticket,'Outbound')).length} outbound · ${carried} carried forward`],
-    ['Pickup rate',pickups.length?`${(passed/pickups.length*100).toFixed(2)}%`:'—',`${passed}/${pickups.length} valid inbound pickups ≤ 20s`],
-    ['Avg. pickup',pickups.length?`${mean(pickups)} sec`:'—','Valid inbound pickups'],
+    ['Pickup rate',pickups.length?`${(passed/pickups.length*100).toFixed(2)}%`:'—',`${passed}/${pickups.length} valid inbound pickups ≤ 20s · 90% goal`,tone(rate===null?null:rate>=90)],
+    ['Avg. pickup',pickups.length?`${mean(pickups)} sec`:'—','20 sec target',tone(pickups.length?pickups.reduce((sum,seconds)=>sum+seconds,0)/pickups.length<=20:null)],
     ['Call attempts',attempts,'Recorded on tickets in this period'],
     ['Attendance',`${days} ${days===1?'day':'days'}`,'Unique days marked present'],
     ['Tickets / attendance',days?(rows.length/days).toFixed(2):'—','Tickets per day present'],
     ['Attempts / attendance',days?(attempts/days).toFixed(2):'—','Attempts per day present'],
-    ['Avg. closing time',averageClose===null?'—':`${averageClose} days`,'Tickets with a recorded close']
+    ['Avg. closing time',averageClose===null?'—':`${averageClose} days`,'1.5 days target',tone(averageClose===null?null:closingTimes.reduce((sum,value)=>sum+value,0)/closingTimes.length<=1.5)]
   ];
-  const markup=metrics.map(([label,value,detail])=>`<div class="records-month-stat"><span>${label}</span><strong>${value}</strong><small>${detail}</small></div>`).join('');
-  if(grid.innerHTML!==markup)grid.innerHTML=markup;
+  if(!grid.children.length){
+    grid.innerHTML=metrics.map(([label])=>`<div class="records-month-stat"><span>${label}</span><strong></strong><small></small></div>`).join('');
+  }
+  const motion=typeof window.matchMedia==='function'&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  metrics.forEach(([,value,detail,metricTone='neutral'],index)=>{
+    const card=grid.children[index];
+    const [,number,note]=card.children;
+    const next=String(value);
+    const changed=number.textContent!==next||card.dataset.metricTone!==metricTone;
+    card.dataset.metricTone=metricTone;
+    if(number.textContent!==next)number.textContent=next;
+    if(note.textContent!==detail)note.textContent=detail;
+    if(changed&&motion)number.animate?.([{opacity:.45,transform:'translateY(3px)'},{opacity:1,transform:'translateY(0)'}],{duration:220,easing:'ease-out'});
+  });
   statusLine.textContent=statuses.map(status=>`${status} ${rows.filter(ticket=>ticket.status===status).length}`).join(' · ');
   const isNewMonth=activeMonth()!==current;
   const resetButton=tools.querySelector('button');
