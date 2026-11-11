@@ -14,7 +14,7 @@ const newMonth=active!==current;
 const style=document.createElement('style');style.textContent=`.month-tools{display:flex;align-items:center;gap:8px}.month-chip{border:1px solid #dbe6f1;background:#f8fbff;color:#456078;border-radius:9px;padding:7px 10px;font:700 11px Inter,sans-serif;white-space:nowrap}.month-reset-btn{border:1px solid #dbe6f1;background:#fff;color:#34506a;border-radius:9px;padding:7px 11px;font:750 11px Inter,sans-serif;cursor:pointer;transition:.15s ease}.month-reset-btn:hover{background:#f4f8fc;border-color:#cbd9e7}.month-reset-btn.attention{background:#fff7ed;border-color:#fed7aa;color:#b45309}.mrm-backdrop{position:fixed;inset:0;z-index:2147483646;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(4,15,31,.58);backdrop-filter:blur(8px);opacity:0;visibility:hidden;pointer-events:none;transition:.2s}.mrm-backdrop.open{opacity:1;visibility:visible;pointer-events:auto}.mrm-card{width:min(460px,calc(100vw - 32px));background:#fff;border:1px solid #e1e9f2;border-radius:22px;padding:26px;box-shadow:0 30px 90px rgba(3,24,51,.3);font-family:Inter,sans-serif;transform:translateY(12px) scale(.97);transition:.2s}.mrm-backdrop.open .mrm-card{transform:none}.mrm-icon{width:50px;height:50px;border-radius:15px;display:grid;place-items:center;background:#edf6ff;color:#1677d2;font-size:23px;font-weight:800}.mrm-card h2{margin:15px 0 7px;color:#102a43;font-size:20px}.mrm-card p{margin:0;color:#66788c;font-size:13px;line-height:1.6}.mrm-summary{margin:18px 0;padding:13px 14px;border:1px solid #e4ebf3;border-radius:12px;background:#f8fafc;display:grid;gap:8px}.mrm-row{display:flex;justify-content:space-between;gap:14px;font-size:12px;color:#5d7186}.mrm-row strong{color:#173b57}.mrm-note{padding:10px 12px;border-radius:10px;background:#effaf4;color:#24734a;font:600 11px/1.5 Inter,sans-serif}.mrm-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}.mrm-actions button{border:0;border-radius:11px;padding:12px 15px;font:750 13px Inter,sans-serif;cursor:pointer}.mrm-cancel{background:#eef3f8;color:#334e68}.mrm-confirm{background:linear-gradient(135deg,#147ee8,#075fbd);color:#fff;box-shadow:0 9px 20px rgba(20,126,232,.22)}`;document.head.appendChild(style);
 const head=document.querySelector('.records-head .filters');if(!head)return;
 const tools=document.createElement('div');tools.className='month-tools';tools.innerHTML=`<span class="month-chip">${monthName(current)}</span><button type="button" class="month-reset-btn${newMonth?' attention':''}">${newMonth?'New Month · Reset':'Reset Month'}</button>`;head.prepend(tools);
-const modal=document.createElement('div');modal.className='mrm-backdrop';modal.innerHTML=`<div class="mrm-card" role="dialog" aria-modal="true"><div class="mrm-icon">↻</div><h2>Start a fresh month?</h2><p>Your current tickets and attendance are archived. Unresolved tickets stay in All Tickets for the next period.</p><div class="mrm-summary"><div class="mrm-row"><span>Period to archive</span><strong>${monthName(active)}</strong></div><div class="mrm-row"><span>New period</span><strong>${monthName(current)}</strong></div><div class="mrm-row"><span>Tickets to archive</span><strong id="mrmCount">0</strong></div><div class="mrm-row"><span>Tickets to carry forward</span><strong id="mrmCarryCount">0</strong></div></div><div class="mrm-note">Your records are saved to the monthly archive in Firebase.</div><div class="mrm-actions"><button type="button" class="mrm-cancel">Cancel</button><button type="button" class="mrm-confirm">Archive & Reset</button></div></div>`;document.body.appendChild(modal);
+const modal=document.createElement('div');modal.className='mrm-backdrop';modal.innerHTML=`<div class="mrm-card" role="dialog" aria-modal="true"><div class="mrm-icon">↻</div><h2>Start a fresh month?</h2><p>Your current tickets and attendance are archived. Unresolved tickets stay in All Tickets for the next period.</p><div class="mrm-summary"><div class="mrm-row"><span>Period to archive</span><strong>${monthName(active)}</strong></div><div class="mrm-row"><span>New period</span><strong>${monthName(current)}</strong></div><div class="mrm-row"><span>Tickets to archive</span><strong id="mrmCount">0</strong></div><div class="mrm-row"><span>Tickets to carry forward</span><strong id="mrmCarryCount">0</strong></div></div><div class="reset-period-preview"><dl></dl><h3>Tickets moving to next period</h3><ul></ul></div><div class="mrm-note">Your records are saved to the monthly archive in Firebase.</div><div class="mrm-actions"><button type="button" class="mrm-cancel">Cancel</button><button type="button" class="mrm-confirm">Archive & Reset</button></div></div>`;document.body.appendChild(modal);
 const read=(k,fallback)=>{try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(fallback))}catch{return fallback}};
 function open(){
   const period=activePeriod(archiveData());
@@ -22,6 +22,7 @@ function open(){
   modal.querySelector('#mrmCount').textContent=tickets.length;
   modal.querySelector('#mrmCarryCount').textContent=tickets.filter(isUnresolved).length;
   modal.querySelector('.mrm-row strong').textContent=rangeLabel(period.start,period.end);
+  renderResetPreview(period,tickets.filter(isUnresolved));
   modal.classList.add('open');
 }
 function close(){if(!pendingReset)modal.classList.remove('open')}
@@ -129,7 +130,7 @@ const summary=document.createElement('section');
 summary.className='records-month-summary';
 summary.setAttribute('aria-labelledby','recordsMonthTitle');
 summary.innerHTML=`<div class="records-month-heading"><div><h3 id="recordsMonthTitle">Period Summary</h3><p data-month-range></p></div><label>Period <select aria-label="Summary period"></select></label></div>
-<div class="records-month-grid" aria-live="polite"></div><p data-month-status></p>`;
+<p class="records-period-comparison" hidden></p><div class="records-month-grid" aria-live="polite"></div><p data-month-status></p>`;
 head.closest('.records-head').after(summary);
 style.textContent+=`
 .records-month-summary{margin:12px 0 16px;padding:16px;border:1px solid #e5dfd1;border-radius:14px;background:#faf8f2;color:#263c35}
@@ -146,6 +147,16 @@ style.textContent+=`
 .records-month-summary [data-month-status]{font-variant-numeric:tabular-nums}
 .records-month-summary [data-month-status]{margin-top:10px}
 .records-loading .records-month-summary{display:none}
+.records-period-comparison{margin:0 0 10px!important}
+.records-month-stat .period-delta{font-weight:700;color:#445d52}
+.records-head .follow-up-filter{display:inline-flex;align-items:center;gap:5px;font-size:12px;white-space:nowrap}
+.records-head .follow-up-filter input{width:auto;min-width:0;margin:0;accent-color:#a72335}
+.mrm-card{max-height:calc(100dvh - 32px);overflow:auto}
+.reset-period-preview{margin:0 0 12px;font-size:12px;color:#43574f}
+.reset-period-preview dl{display:grid;grid-template-columns:1fr auto;gap:4px 12px;margin:0 0 8px}
+.reset-period-preview dd{margin:0;font-weight:700}
+.reset-period-preview h3{font-size:12px;margin:0 0 4px}
+.reset-period-preview ul{margin:0;padding-left:18px;max-height:110px;overflow:auto}
 .records-panel [data-metric-tone="good"]{--metric-text:#166044;--metric-surface:#e9f7ee;--metric-border:#9acfb1}
 .records-panel [data-metric-tone="warning"]{--metric-text:#9a4a0d;--metric-surface:#fff3e6;--metric-border:#e9b681}
 .records-panel [data-metric-tone="critical"]{--metric-text:#a72335;--metric-surface:#fff0f1;--metric-border:#e8a5ae}
@@ -226,6 +237,43 @@ const closeDays=ticket=>{
 const statuses=['Open','Pending','On Hold','Solved','Closed','Merged'];
 const formatDate=new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'Asia/Manila'});
 const pickupTone=rate=>rate===null?'neutral':rate>=90?'good':rate>=75?'warning':'critical';
+function periodMetrics(period){
+  const within=day=>day&&day>=period.start&&day<=period.end;
+  const rows=uniqueTickets(period.tickets.filter(ticket=>within(ticketPeriodDay(ticket))));
+  const days=new Set(period.attendance.filter(within)).size;
+  const carried=rows.filter(ticket=>ticket.carriedIntoPeriod).length;
+  const pickups=validPickups(rows.filter(ticket=>!ticket.carriedIntoPeriod));
+  const passed=pickups.filter(seconds=>seconds<=20).length;
+  const attempts=rows.reduce((total,ticket)=>total+Math.max(0,attemptCount(ticket)-(Number(ticket.carriedAttemptBaseline)||0)),0);
+  const closingTimes=rows.map(closeDays).filter(value=>value!==null);
+  const averageClose=mean(closingTimes,2);
+  const rate=pickups.length?passed/pickups.length*100:null;
+  return {rows,days,carried,pickups,passed,attempts,closingTimes,averageClose,rate};
+}
+function renderResetPreview(period,carried){
+  const {rows,rate,attempts,days,averageClose}=periodMetrics(period);
+  const details=[['Total tickets',rows.length],
+    ['Pickup rate',rate===null?'—':rate.toFixed(2)+'%'],['Call attempts',attempts],
+    ['Days present',days],['Avg. closing time',averageClose===null?'—':averageClose+' days']];
+  const preview=modal.querySelector('.reset-period-preview');
+  preview.querySelector('dl').replaceChildren(...details.flatMap(([label,value])=>{
+    const term=document.createElement('dt'),detail=document.createElement('dd');
+    term.textContent=label;
+    detail.textContent=value;
+    return [term,detail];
+  }));
+  preview.querySelector('ul').replaceChildren(...(carried.length?carried:[null]).map(ticket=>{
+    const item=document.createElement('li');
+    item.textContent=ticket?`#${ticket.number||ticket.id} · ${ticket.status||'Open'}`:'No tickets to carry forward.';
+    return item;
+  }));
+}
+function formatDelta(value,previous,places,suffix){
+  if(value==null||previous==null)return null;
+  const delta=Number((value-previous).toFixed(places));
+  if(!delta)return 'No change';
+  return `${delta>0?'↑':'↓'} ${Math.abs(delta).toFixed(places)}${suffix}`;
+}
 function renderSummary(){
   const archives=archiveData();
   const periods=new Map([['active',activePeriod(archives)]]);
@@ -243,18 +291,14 @@ function renderSummary(){
   }
   select.value=selected;
   const period=periods.get(selected);
-  const within=day=>day&&day>=period.start&&day<=period.end;
-  const rows=uniqueTickets(period.tickets.filter(ticket=>within(ticketPeriodDay(ticket))));
-  const days=new Set(period.attendance.filter(within)).size;
-  const carried=rows.filter(ticket=>ticket.carriedIntoPeriod).length;
-  const pickups=validPickups(rows.filter(ticket=>!ticket.carriedIntoPeriod));
-  const passed=pickups.filter(seconds=>seconds<=20).length;
-  const attempts=rows.reduce((total,ticket)=>total+Math.max(0,attemptCount(ticket)-(Number(ticket.carriedAttemptBaseline)||0)),0);
-  const closingTimes=rows.map(closeDays).filter(value=>value!==null);
-  const averageClose=mean(closingTimes,2);
+  const {rows,days,carried,pickups,passed,attempts,closingTimes,averageClose,rate}=periodMetrics(period);
+  const previous=[...periods.values()][[...periods.keys()].indexOf(selected)+1];
+  const previousMetrics=previous?periodMetrics(previous):null;
+  const comparison=summary.querySelector('.records-period-comparison');
+  comparison.hidden=!previous;
+  comparison.textContent=previous?'Compared with '+rangeLabel(previous.start,previous.end):'';
   const range=rangeLabel(period.start,period.end);
   summary.querySelector('[data-month-range]').textContent=period.inferred?`${range} · Start based on first available record`:range;
-  const rate=pickups.length?passed/pickups.length*100:null;
   const tone=good=>good==null?'neutral':good?'good':'critical';
   const metrics=[
     ['Total tickets',rows.length,`${rows.filter(ticket=>callType(ticket,'Inbound')).length} inbound · ${rows.filter(ticket=>callType(ticket,'Outbound')).length} outbound · ${carried} carried forward`],
@@ -267,15 +311,28 @@ function renderSummary(){
     ['Avg. closing time',averageClose===null?'—':`${averageClose} days`,'1.5 days target',tone(averageClose===null?null:closingTimes.reduce((sum,value)=>sum+value,0)/closingTimes.length<=1.5)]
   ];
   if(!grid.children.length){
-    grid.innerHTML=metrics.map(([label])=>`<div class="records-month-stat"><span>${label}</span><strong><span aria-hidden="true" data-summary-count></span><span class="count-announcement"></span></strong><small></small></div>`).join('');
+    grid.innerHTML=metrics.map(([label])=>`<div class="records-month-stat"><span>${label}</span><strong><span aria-hidden="true" data-summary-count></span><span class="count-announcement"></span></strong><small></small><small class="period-delta" hidden></small></div>`).join('');
     statusLine.innerHTML=statuses.map(status=>`<span>${status} <span aria-hidden="true" data-summary-count></span><span class="count-announcement"></span></span>`).join(' · ');
   }
+  const deltas=previousMetrics?[
+    formatDelta(rows.length,previousMetrics.rows.length,0,' tickets'),
+    formatDelta(rate,previousMetrics.rate,2,' percentage points'),
+    formatDelta(mean(pickups),mean(previousMetrics.pickups),1,' sec'),
+    formatDelta(attempts,previousMetrics.attempts,0,' attempts'),
+    formatDelta(days,previousMetrics.days,0,' days'),
+    formatDelta(days?rows.length/days:null,previousMetrics.days?previousMetrics.rows.length/previousMetrics.days:null,2,' tickets/day'),
+    formatDelta(days?attempts/days:null,previousMetrics.days?previousMetrics.attempts/previousMetrics.days:null,2,' attempts/day'),
+    formatDelta(averageClose,previousMetrics.averageClose,2,' days')
+  ]:[];
   metrics.forEach(([,value,detail,metricTone='neutral'],index)=>{
     const card=grid.children[index];
-    const [,number,note]=card.children;
+    const [,number,note,deltaLabel]=card.children;
     if(card.dataset.metricTone!==metricTone)card.dataset.metricTone=metricTone;
     updateCount(number.firstElementChild,value);
     if(note.textContent!==detail)note.textContent=detail;
+    const delta=deltas[index];
+    deltaLabel.hidden=!delta;
+    if(deltaLabel.textContent!==(delta||''))deltaLabel.textContent=delta||'';
   });
   [...statusLine.children].forEach((item,index)=>{
     updateCount(item.firstElementChild,rows.filter(ticket=>ticket.status===statuses[index]).length);
