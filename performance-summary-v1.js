@@ -10,11 +10,11 @@ function ensureClosingRecovery(){const avg=$('avgClosing');if(!avg)return;const 
 // (passed + n) / (total + n) >= 90%; integer arithmetic avoids rounding errors.
 function fastPickupsNeeded(passed,total){return Math.max(0,Math.ceil((PICKUP_RATE_TARGET*total-100*passed)/(100-PICKUP_RATE_TARGET)))}
 let lastSummary='';
-function update(){const t=records(),signature=JSON.stringify(t);if(signature===lastSummary)return;lastSummary=signature;const set=(id,v)=>{const e=$(id);if(e)e.textContent=v};const inbound=t.filter(x=>x.callType==='Inbound Call'),pickups=inbound.filter(x=>x.pickupSeconds!==null&&x.pickupSeconds!==undefined&&String(x.pickupSeconds).trim()!=='').map(x=>Number(x.pickupSeconds)).filter(x=>Number.isFinite(x)&&x>=0),sumPickup=pickups.reduce((a,b)=>a+b,0),avgPickup=pickups.length?sumPickup/pickups.length:null,rate=avgPickup==null?null:avgPickup===0?100:Math.min(100,TARGET/avgPickup*100),RECOVERY_SECONDS=2,targetAverage=TARGET*100/PICKUP_RATE_TARGET;
+function update(){const t=records(),signature=JSON.stringify(t);if(signature===lastSummary)return;lastSummary=signature;const set=(id,v)=>{const e=$(id);if(e)e.textContent=v};const inbound=t.filter(x=>x.callType==='Inbound Call'),pickups=inbound.filter(x=>x.pickupSeconds!==null&&x.pickupSeconds!==undefined&&String(x.pickupSeconds).trim()!=='').map(x=>Number(x.pickupSeconds)).filter(x=>Number.isFinite(x)&&x>=0),sumPickup=pickups.reduce((a,b)=>a+b,0),avgPickup=pickups.length?sumPickup/pickups.length:null,rate=avgPickup==null?null:avgPickup===0?100:Math.min(100,TARGET/avgPickup*100),RECOVERY_SECONDS=20,targetAverage=TARGET*100/PICKUP_RATE_TARGET;
 set('avgPickup',avgPickup==null?'—':`${avgPickup.toFixed(2)} sec`);
 set('avgPickupSub',pickups.length?`Total ${sumPickup.toLocaleString('en-US',{maximumFractionDigits:2})} sec ÷ ${pickups.length} inbound calls with pickup times`:'No valid inbound pickup times');
 set('pickupRate',rate==null?'—':`${rate.toFixed(2)}%`);
-set('pickupRateSub',rate==null?'No valid inbound pickup times':`20 sec ÷ ${avgPickup.toFixed(2)} sec × 100 = ${rate.toFixed(2)}% (max 100%)`);
+set('pickupRateSub',rate==null?'No valid inbound pickup times':`20s minimum benchmark ÷ ${avgPickup.toFixed(2)}s average × 100 = ${rate.toFixed(2)}% (capped at 100%)`);
 paint('avgPickup',avgPickup==null?'':avgPickup<=20?GOOD:avgPickup<=targetAverage?WARN:BAD);
 paint('pickupRate',rate==null?'':rate>=90?GOOD:rate>=75?WARN:BAD);
 const pr=$('pickupRecovery'),ps=$('pickupRecoverySub');
