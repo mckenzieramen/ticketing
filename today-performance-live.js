@@ -2,9 +2,9 @@
 if(window.ticketFiveDayChartReady)return;window.ticketFiveDayChartReady=true;
 const DAY_COUNT=10;
 const KEY='premiumTicketTracker.v1',pad=n=>String(n).padStart(2,'0');
-function read(){try{const value=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(value)?value:[]}catch{return[]}}
+function read(){try{const value=JSON.parse(window.FirebaseOnlyMemory?.get?.(KEY) ?? localStorage.getItem(KEY) ?? '[]');return Array.isArray(value)?value:[]}catch{return[]}}
 function key(d){return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`}
-function localDay(v){const m=String(v||'').match(/^(\d{4}-\d{2}-\d{2})[ T]/);return m?m[1]:''}
+function localDay(v){const m=String(v||'').match(/^(\d{4}-\d{2}-\d{2})(?:[ T]|$)/);return m?m[1]:''}
 function ticketDay(t){return localDay(t.creation)||localDay(t.createdAt)||localDay(t.ticketCreation)||localDay(t.lastEditedAt)}
 function closingDays(t){const a=new Date(String(t.creation||'').replace(' ','T')),b=new Date(String(t.closedTime||'').replace(' ','T')),days=(b-a)/86400000;return Number.isFinite(days)&&days>=0?days:null}
 function closingScore(days){return days==null?null:days<=1.5?100:days>=3?75:100-((days-1.5)/1.5)*25}
@@ -28,5 +28,5 @@ let signature='',renderFrame=0,entranceFrame=0;
 function animate(){const plot=document.querySelector('.day-chart-plot');if(!plot||document.documentElement.dataset.trackerView!=='dashboard')return;cancelAnimationFrame(entranceFrame);plot.classList.remove('day-chart-enter');entranceFrame=requestAnimationFrame(()=>{entranceFrame=requestAnimationFrame(()=>plot.classList.add('day-chart-enter'))})}
 function render(){const section=setup(),grid=document.getElementById('dailyGrid');if(!section||!grid)return;const now=new Date(),all=read(),next=key(now)+'|'+JSON.stringify(all);if(next===signature)return;signature=next;const days=[];for(let i=DAY_COUNT-1;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth(),now.getDate()-i);days.push({d,s:statsFor(key(d),all)})}grid.className='last5-performance-chart';grid.innerHTML=chart(days);const date=document.getElementById('dailyDate');if(date)date.textContent=`Today + previous ${DAY_COUNT-1} days`;animate()}
 function schedule(){if(renderFrame)return;renderFrame=requestAnimationFrame(()=>{renderFrame=0;render()})}
-['ticket-data-updated','ticket-record-saved','ticket-live-sync','firebase-data-saved','call-attempt-updated'].forEach(name=>window.addEventListener(name,schedule));window.addEventListener('tracker-view-changed',e=>{if(e.detail?.view==='dashboard'){render();animate()}});window.addEventListener('storage',e=>{if(!e.key||e.key===KEY)schedule()});document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')schedule()});render();window.refreshTodayPerformance=render;
+['ticket-data-updated','ticket-record-saved','firebase-memory-write','ticket-live-sync','firebase-data-saved','call-attempt-updated'].forEach(name=>window.addEventListener(name,schedule));window.addEventListener('tracker-view-changed',e=>{if(e.detail?.view==='dashboard'){render();animate()}});window.addEventListener('storage',e=>{if(!e.key||e.key===KEY)schedule()});document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')schedule()});render();window.refreshTodayPerformance=render;
 })();
