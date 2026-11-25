@@ -1,6 +1,6 @@
 (()=>{'use strict';
 const KEY='premiumTicketTracker.v1';
-const read=()=>{const current=window.ticketDashboardDataset?.();let source=current;if(!Array.isArray(source)){try{source=JSON.parse(localStorage.getItem(KEY)||'[]')}catch{source=[]}}return Array.isArray(source)?source.filter(t=>['open','pending','on hold'].includes(String(t?.status||'').trim().toLowerCase())):[]};
+const read=()=>{const current=window.ticketDashboardDataset?.();let source=current;if(!Array.isArray(source)){try{source=JSON.parse(localStorage.getItem(KEY)||'[]')}catch{source=[]}}return Array.isArray(source)?source:[]};
 const parse=v=>{const m=String(v||'').match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/);return m?new Date(+m[1],+m[2]-1,+m[3],+m[4],+m[5],+m[6]):null};
 const key=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 function countFor(day,tickets){const k=key(day),rows=tickets.filter(t=>{const d=parse(t.creation);return d&&key(d)===k});return{total:rows.length,inbound:rows.filter(t=>t.callType==='Inbound Call').length,outbound:rows.filter(t=>t.callType==='Outbound Call').length}}
