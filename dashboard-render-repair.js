@@ -3,8 +3,9 @@ if(window.ticketDashboardRendererReady)return;window.ticketDashboardRendererRead
 const KEY='premiumTicketTracker.v1',STATUSES=['Open','Pending','On Hold','Solved','Closed','Merged'];
 const COLORS={Open:'#39a7e8',Pending:'#f7b916','On Hold':'#ef4c4c',Solved:'#16b86c',Closed:'#728296',Merged:'#7c3aed'};
 function parse(raw){try{const v=typeof raw==='string'?JSON.parse(raw):raw;return Array.isArray(v)?v:[]}catch{return[]}}
-function read(){let v=[];try{v=parse(window.FirebaseOnlyMemory?.get?.(KEY))}catch{}if(v.length)return v;try{v=parse(localStorage.getItem(KEY)||'[]')}catch{}return v}
-function syncAppState(){const next=read();try{if(typeof tickets!=='undefined'&&Array.isArray(next)){tickets=next;if(typeof normalizeLegacy==='function')normalizeLegacy()}}catch(e){console.warn('App ticket state refresh skipped',e)}return next}
+function readRaw(){let v=[];try{v=parse(window.FirebaseOnlyMemory?.get?.(KEY))}catch{}if(v.length)return v;try{v=parse(localStorage.getItem(KEY)||'[]')}catch{}return v}
+function read(){const current=window.ticketDashboardDataset?.();return Array.isArray(current)?current:readRaw()}
+function syncAppState(){const next=readRaw();try{if(typeof tickets!=='undefined'&&Array.isArray(next)){tickets=next;if(typeof normalizeLegacy==='function')normalizeLegacy()}}catch(e){console.warn('App ticket state refresh skipped',e)}return next}
 function installTableGuard(){if(document.getElementById('finalAllTicketsGuard'))return;const s=document.createElement('style');s.id='finalAllTicketsGuard';s.textContent=`html[data-tracker-view="tickets"] #ticketTableBody>tr:not([data-ticket-id]){display:none!important}html[data-tracker-view="tickets"] #ticketTableBody{overflow-anchor:none!important}html[data-tracker-view="tickets"] .records-panel .table-scroll{overflow-anchor:none!important}`;document.head.appendChild(s)}
 function render(){const tickets=read(),stats=document.getElementById('statsGrid'),bars=document.getElementById('statusBars');
  if(stats){const defs=[['Total Tickets',tickets.length,'▤','#087af6'],['Inbound Calls',tickets.filter(t=>t.callType==='Inbound Call').length,'↘','#12b76a'],['Outbound Calls',tickets.filter(t=>t.callType==='Outbound Call').length,'↗','#7145e8'],['Open',tickets.filter(t=>t.status==='Open').length,'□','#16a7dc'],['Pending',tickets.filter(t=>t.status==='Pending').length,'◷','#f6b817'],['On Hold',tickets.filter(t=>t.status==='On Hold').length,'Ⅱ','#ef4444'],['Solved',tickets.filter(t=>t.status==='Solved').length,'✓','#10ad65'],['Closed / Merged',tickets.filter(t=>t.status==='Closed'||t.status==='Merged').length,'▣','#718092']];stats.innerHTML=defs.map(x=>`<div class="stat"><div class="stat-icon" style="background:${x[3]}">${x[2]}</div><div><small>${x[0]}</small><strong>${x[1]}</strong></div></div>`).join('')}
@@ -13,7 +14,7 @@ function render(){const tickets=read(),stats=document.getElementById('statsGrid'
 let frame=0,needsSync=false,lastRender='';function schedule(sync=false){needsSync=needsSync||sync;if(frame)return;frame=requestAnimationFrame(()=>{frame=0;if(needsSync){needsSync=false;syncAppState()}const signature=JSON.stringify(read());if(signature===lastRender)return;lastRender=signature;render()})}
 window.refreshTicketDashboard=()=>schedule(true);
 installTableGuard();
-['ticket-record-saved','ticket-data-updated','ticket-ui-updated','ticket-records-rendered','firebase-memory-write','call-attempt-updated','tracker-view-changed'].forEach(n=>window.addEventListener(n,()=>schedule(true)));
+['ticket-record-saved','ticket-data-updated','ticket-ui-updated','ticket-records-rendered','firebase-memory-write','call-attempt-updated','tracker-view-changed','ticket-period-data-updated'].forEach(n=>window.addEventListener(n,()=>schedule(true)));
 ['ticket-live-sync','firebase-data-saved'].forEach(n=>window.addEventListener(n,()=>schedule(true)));
 window.addEventListener('storage',e=>{if(!e.key||e.key===KEY)schedule(true)});window.addEventListener('pageshow',()=>schedule(true));schedule(true);
 })();
