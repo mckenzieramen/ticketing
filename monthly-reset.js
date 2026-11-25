@@ -311,7 +311,7 @@ function periodMetrics(period){
   const attempts=rows.reduce((total,ticket)=>total+Math.max(0,attemptCount(ticket)-(Number(ticket.carriedAttemptBaseline)||0)),0);
   const closingTimes=rows.map(closeDays).filter(value=>value!==null);
   const averageClose=mean(closingTimes,2);
-  const rate=pickupPerformance(Number(averagePickup));
+  const rate=averagePickup===null?null:pickupPerformance(averagePickup);
   return {rows,days,carried,inboundCount:inbound.length,pickups,passed,averagePickup,attempts,closingTimes,averageClose,rate};
 }
 function renderResetPreview(period,archived,carried){
