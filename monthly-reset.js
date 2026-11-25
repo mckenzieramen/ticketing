@@ -300,7 +300,7 @@ const pickupTone=rate=>rate===null?'neutral':rate>=90?'good':rate>=75?'warning':
 function pickupPerformance(avg){if(!Number.isFinite(avg)||avg<0)return null;if(avg<=1)return 100;return Math.max(0,Math.min(100,100-avg/2))}
 function periodMetrics(period){
   const within=day=>day&&day>=period.start&&day<=period.end;
-  const rows=uniqueTickets(period.tickets.filter(ticket=>within(ticketPeriodDay(ticket))&&(!period.currentOnly||!isArchiveable(ticket))));
+  const rows=uniqueTickets(period.tickets.filter(ticket=>within(ticketPeriodDay(ticket))));
   const days=new Set(period.attendance.filter(within)).size;
   const carried=rows.filter(ticket=>ticket.carriedIntoPeriod).length;
   const metricRows=rows.filter(ticket=>!ticket.carriedIntoPeriod);
