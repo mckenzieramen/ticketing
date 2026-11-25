@@ -12,9 +12,23 @@ const activeMonth=()=>localStorage.getItem(MONTH_KEY)||current;
 const active=activeMonth();
 const newMonth=active!==current;
 const style=document.createElement('style');style.textContent=`.month-tools{display:flex;align-items:center;gap:8px}.month-chip{border:1px solid #dbe6f1;background:#f8fbff;color:#456078;border-radius:9px;padding:7px 10px;font:700 11px Inter,sans-serif;white-space:nowrap}.month-reset-btn{border:1px solid #dbe6f1;background:#fff;color:#34506a;border-radius:9px;padding:7px 11px;font:750 11px Inter,sans-serif;cursor:pointer;transition:.15s ease}.month-reset-btn:hover{background:#f4f8fc;border-color:#cbd9e7}.month-reset-btn.attention{background:#fff7ed;border-color:#fed7aa;color:#b45309}.mrm-backdrop{position:fixed;inset:0;z-index:2147483646;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(4,15,31,.58);backdrop-filter:blur(8px);opacity:0;visibility:hidden;pointer-events:none;transition:.2s}.mrm-backdrop.open{opacity:1;visibility:visible;pointer-events:auto}.mrm-card{width:min(460px,calc(100vw - 32px));background:#fff;border:1px solid #e1e9f2;border-radius:22px;padding:26px;box-shadow:0 30px 90px rgba(3,24,51,.3);font-family:Inter,sans-serif;transform:translateY(12px) scale(.97);transition:.2s}.mrm-backdrop.open .mrm-card{transform:none}.mrm-icon{width:50px;height:50px;border-radius:15px;display:grid;place-items:center;background:#edf6ff;color:#1677d2;font-size:23px;font-weight:800}.mrm-card h2{margin:15px 0 7px;color:#102a43;font-size:20px}.mrm-card p{margin:0;color:#66788c;font-size:13px;line-height:1.6}.mrm-summary{margin:18px 0;padding:13px 14px;border:1px solid #e4ebf3;border-radius:12px;background:#f8fafc;display:grid;gap:8px}.mrm-row{display:flex;justify-content:space-between;gap:14px;font-size:12px;color:#5d7186}.mrm-row strong{color:#173b57}.mrm-note{padding:10px 12px;border-radius:10px;background:#effaf4;color:#24734a;font:600 11px/1.5 Inter,sans-serif}.mrm-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}.mrm-actions button{border:0;border-radius:11px;padding:12px 15px;font:750 13px Inter,sans-serif;cursor:pointer}.mrm-cancel{background:#eef3f8;color:#334e68}.mrm-confirm{background:linear-gradient(135deg,#147ee8,#075fbd);color:#fff;box-shadow:0 9px 20px rgba(20,126,232,.22)}`;document.head.appendChild(style);
+style.textContent+=`
+.cutoff-nav-tools{display:flex;align-items:center;gap:6px;margin-left:auto;padding-left:8px}
+.cutoff-nav-tools button{border:1px solid #d7e3ee;border-radius:8px;padding:8px 10px;background:#fff;color:#34546f;font:800 10px Inter,sans-serif;white-space:nowrap;cursor:pointer}
+.cutoff-nav-tools .cutoff-nav-reset{background:#176fbd;border-color:#176fbd;color:#fff}
+.cutoff-nav-tools button:hover{filter:brightness(.97)}
+.archive-manager-card{width:min(540px,calc(100vw - 32px))}
+.archive-manager-list{display:grid;gap:8px;margin-top:16px;max-height:38vh;overflow:auto}
+.archive-manager-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid #e4ebf3;border-radius:10px;background:#f9fbfd;font:650 12px Inter,sans-serif;color:#355169}
+.archive-manager-row button{border:0;border-radius:8px;padding:7px 10px;background:#fff0ef;color:#b42330;font:800 11px Inter,sans-serif;cursor:pointer}
+.archive-manager-status{min-height:18px;margin-top:10px!important;color:#64788c!important;font-size:11px!important}
+.archive-manager-retry[hidden]{display:none!important}
+@media(max-width:700px){.cutoff-nav-tools{gap:4px;padding-left:4px}.cutoff-nav-tools button{padding:7px 8px;font-size:9px}}
+`;
 const head=document.querySelector('.records-head .filters');if(!head)return;
 const tools=document.createElement('div');tools.className='month-tools';tools.innerHTML=`<span class="month-chip">${monthName(current)}</span><button type="button" class="month-reset-btn${newMonth?' attention':''}">${newMonth?'New Month · Reset':'Reset Month'}</button>`;head.prepend(tools);
 const modal=document.createElement('div');modal.className='mrm-backdrop';modal.innerHTML=`<div class="mrm-card" role="dialog" aria-modal="true"><div class="mrm-icon">↻</div><h2>Start a fresh month?</h2><p>Solved, Closed, and Merged tickets are archived for this cutoff. Open, Pending, and On Hold tickets stay in All Tickets for the next period.</p><div class="mrm-summary"><div class="mrm-row"><span>Period to archive</span><strong>${monthName(active)}</strong></div><div class="mrm-row"><span>New period</span><strong>${monthName(current)}</strong></div><div class="mrm-row"><span>Tickets to archive</span><strong id="mrmCount">0</strong></div><div class="mrm-row"><span>Tickets to carry forward</span><strong id="mrmCarryCount">0</strong></div></div><div class="reset-period-preview"><dl></dl><h3>Tickets moving to next period</h3><ul></ul></div><div class="mrm-note">Your records are saved to the monthly archive in Firebase.</div><div class="mrm-actions"><button type="button" class="mrm-cancel">Cancel</button><button type="button" class="mrm-confirm">Archive & Reset</button></div></div>`;document.body.appendChild(modal);
+const archiveManager=document.createElement('div');archiveManager.className='mrm-backdrop archive-manager-backdrop';archiveManager.innerHTML=`<div class="mrm-card archive-manager-card" role="dialog" aria-modal="true"><div class="mrm-icon">▤</div><h2>Manage archived cutoffs</h2><p>Delete an archived cutoff only if you no longer need its saved ticket and attendance records. Current tickets will stay unchanged.</p><div class="archive-manager-list"></div><p class="archive-manager-status" role="status"></p><div class="mrm-actions"><button type="button" class="mrm-cancel archive-manager-close">Done</button><button type="button" class="mrm-confirm archive-manager-retry" hidden>Retry Save</button></div></div>`;document.body.appendChild(archiveManager);
 const read=(k,fallback)=>{try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(fallback))}catch{return fallback}};
 function open(){
   const period=activePeriod(archiveData());
@@ -31,6 +45,41 @@ function close(){if(!pendingReset)modal.classList.remove('open')}
 tools.querySelector('button').addEventListener('click',open);modal.querySelector('.mrm-cancel').addEventListener('click',close);modal.addEventListener('click',e=>{if(e.target===modal)close()});document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
 const list=value=>Array.isArray(value)?value:[];
 const archiveData=()=>read(ARCHIVE_KEY,{})||{};
+let pendingArchiveDelete=false;
+function renderArchiveManager(){
+  const listEl=archiveManager.querySelector('.archive-manager-list');
+  const entries=Object.entries(archiveData()).filter(([,archive])=>archive&&typeof archive==='object').sort(([,a],[,b])=>String(b.archivedAt||'').localeCompare(String(a.archivedAt||'')));
+  listEl.replaceChildren();
+  if(!entries.length){const empty=document.createElement('div');empty.className='archive-empty';empty.textContent='No archived cutoffs yet.';listEl.append(empty);return}
+  for(const [key,archive] of entries){
+    const row=document.createElement('div');row.className='archive-manager-row';
+    const label=document.createElement('span');
+    const start=dayOf(archive.periodStart),end=dayOf(archive.periodEnd);
+    const range=start&&end?rangeLabel(start,end):monthName(key.slice(0,7));
+    label.textContent=`${range} · ${list(archive.tickets).length} archived tickets`;
+    const button=document.createElement('button');button.type='button';button.textContent='Delete';button.dataset.archiveDelete=key;
+    row.append(label,button);listEl.append(row)
+  }
+}
+function openArchiveManager(){renderArchiveManager();archiveManager.querySelector('.archive-manager-status').textContent='';archiveManager.querySelector('.archive-manager-retry').hidden=true;archiveManager.classList.add('open')}
+function closeArchiveManager(){if(!pendingArchiveDelete)archiveManager.classList.remove('open')}
+archiveManager.querySelector('.archive-manager-close').addEventListener('click',closeArchiveManager);
+archiveManager.addEventListener('click',e=>{
+  if(e.target===archiveManager)closeArchiveManager();
+  const button=e.target.closest('[data-archive-delete]');if(!button||pendingArchiveDelete)return;
+  const key=button.dataset.archiveDelete,archives=archiveData(),archive=archives[key];if(!archive)return;
+  const count=list(archive.tickets).length;
+  if(!window.confirm(`Permanently delete ${rangeLabel(dayOf(archive.periodStart)||dayOf(archive.archivedAt),dayOf(archive.periodEnd)||resetDay(archive.archivedAt))} with ${count} archived tickets? Current tickets will not be affected.`))return;
+  delete archives[key];localStorage.setItem(ARCHIVE_KEY,JSON.stringify(archives));
+  pendingArchiveDelete=true;archiveManager.querySelector('.archive-manager-status').textContent='Saving archive deletion to Firebase…';
+  void window.FirebaseTicketPersistence?.retrySave();
+});
+window.addEventListener('ticket-cloud-save',event=>{
+  if(!pendingArchiveDelete)return;
+  if(event.detail?.phase==='saved'){pendingArchiveDelete=false;location.reload()}
+  else if(event.detail?.phase==='error'){archiveManager.querySelector('.archive-manager-status').textContent='Could not save to Firebase. Try again.';archiveManager.querySelector('.archive-manager-retry').hidden=false}
+});
+archiveManager.querySelector('.archive-manager-retry').addEventListener('click',()=>{if(pendingArchiveDelete)void window.FirebaseTicketPersistence?.retrySave()});
 const dayOf=value=>{
   const day=String(value??'').slice(0,10);
   return /^\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])$/.test(day)?day:'';
@@ -373,5 +422,17 @@ for(const name of ['firebase-memory-write','ticket-live-sync','ticket-data-updat
 window.addEventListener('ticket-records-rendered',scheduleCurrentPeriodTableFilter);
 window.addEventListener('ticket-record-saved',scheduleCurrentPeriodTableFilter);
 window.addEventListener('ticket-live-sync',scheduleCurrentPeriodTableFilter);
+function installDashboardCutoffTools(){
+  const nav=document.querySelector('main.container>.premium-tabs');
+  if(!nav||nav.querySelector('.cutoff-nav-tools'))return;
+  const controls=document.createElement('div');controls.className='cutoff-nav-tools';
+  controls.innerHTML='<button type="button" class="cutoff-nav-reset">Reset cutoff</button><button type="button" class="cutoff-nav-archives">Delete archive</button>';
+  controls.querySelector('.cutoff-nav-reset').addEventListener('click',open);
+  controls.querySelector('.cutoff-nav-archives').addEventListener('click',openArchiveManager);
+  nav.append(controls)
+}
+installDashboardCutoffTools();
+const main=document.querySelector('main.container');
+if(main)new MutationObserver(installDashboardCutoffTools).observe(main,{childList:true});
 renderSummary();scheduleCurrentPeriodTableFilter();
 })();
