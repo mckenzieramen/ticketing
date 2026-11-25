@@ -306,7 +306,7 @@ function periodMetrics(period){
   const metricRows=rows.filter(ticket=>!ticket.carriedIntoPeriod);
   const inbound=metricRows.filter(ticket=>callType(ticket,'Inbound'));
   const pickups=validPickups(inbound);
-  const averagePickup=mean(pickups,2);
+  const averagePickup=pickups.length&&inbound.length?Number((pickups.reduce((total,seconds)=>total+seconds,0)/inbound.length).toFixed(2)):null;
   const passed=pickups.filter(seconds=>seconds<=20).length;
   const attempts=rows.reduce((total,ticket)=>total+Math.max(0,attemptCount(ticket)-(Number(ticket.carriedAttemptBaseline)||0)),0);
   const closingTimes=rows.map(closeDays).filter(value=>value!==null);
@@ -366,8 +366,8 @@ function renderSummary(){
   const tone=good=>good==null?'neutral':good?'good':'critical';
   const metrics=[
     ['Total tickets',rows.length,`${rows.filter(ticket=>callType(ticket,'Inbound')).length} inbound · ${rows.filter(ticket=>callType(ticket,'Outbound')).length} outbound · ${carried} carried forward`],
-    ['Pickup performance',rate===null?'—':`${rate.toFixed(2)}%`,pickups.length?`${mean(pickups,2)} sec average · 1 sec = 100%, 20 sec = 90% · 75% is passing`:'No valid inbound pickup times · 20 sec = 90% goal',pickupTone(rate)],
-    ['Avg. pickup',pickups.length?`${mean(pickups)} sec`:'—','20 sec target',tone(pickups.length?pickups.reduce((sum,seconds)=>sum+seconds,0)/pickups.length<=20:null)],
+    ['Pickup performance',rate===null?'—':`${rate.toFixed(2)}%`,averagePickup!==null?`${averagePickup} sec average across ${inboundCount} existing inbound calls · 75% is passing`:'No valid inbound pickup times · 20 sec = 90% goal',pickupTone(rate)],
+    ['Avg. pickup',averagePickup!==null?`${averagePickup} sec`:'—','20 sec target',tone(averagePickup!==null?averagePickup<=20:null)],
     ['Call attempts',attempts,'Recorded on tickets in this period'],
     ['Attendance',`${days} ${days===1?'day':'days'}`,'Unique days marked present'],
     ['Tickets / attendance',days?(rows.length/days).toFixed(2):'—','Tickets per day present'],
@@ -381,7 +381,7 @@ function renderSummary(){
   const deltas=previousMetrics?[
     formatDelta(rows.length,previousMetrics.rows.length,0,' tickets'),
     formatDelta(rate,previousMetrics.rate,2,' percentage points'),
-    formatDelta(mean(pickups),mean(previousMetrics.pickups),1,' sec'),
+    formatDelta(averagePickup,previousMetrics.averagePickup,1,' sec'),
     formatDelta(attempts,previousMetrics.attempts,0,' attempts'),
     formatDelta(days,previousMetrics.days,0,' days'),
     formatDelta(days?rows.length/days:null,previousMetrics.days?previousMetrics.rows.length/previousMetrics.days:null,2,' tickets/day'),
