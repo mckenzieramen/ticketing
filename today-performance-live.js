@@ -2,7 +2,7 @@
 if(window.ticketFiveDayChartReady)return;window.ticketFiveDayChartReady=true;
 const DAY_COUNT=10;
 const KEY='premiumTicketTracker.v1',pad=n=>String(n).padStart(2,'0');
-function read(){try{const raw=localStorage.getItem(KEY)??window.FirebaseOnlyMemory?.get?.(KEY);if(raw!==null&&raw!==undefined){const value=typeof raw==='string'?JSON.parse(raw):raw;if(Array.isArray(value))return value}}catch{}const current=window.ticketDashboardDataset?.();return Array.isArray(current)?current:[]}
+function read(){const current=window.ticketDashboardDataset?.();if(Array.isArray(current))return current;try{const raw=localStorage.getItem(KEY)??window.FirebaseOnlyMemory?.get?.(KEY);if(raw!==null&&raw!==undefined){const value=typeof raw==='string'?JSON.parse(raw):raw;if(Array.isArray(value))return value}}catch{}return[]}
 function key(d){return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`}
 function localDay(v){const m=String(v||'').match(/^(\d{4}-\d{2}-\d{2})(?:[ T]|$)/);return m?m[1]:''}
 function ticketDay(t){return localDay(t.creation)||localDay(t.createdAt)||localDay(t.ticketCreation)||localDay(t.lastEditedAt)}

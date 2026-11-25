@@ -125,7 +125,9 @@ function activePeriod(archives){
   return {start:previousReset||firstRecordDay(tickets,attendance,end)||end,end,tickets,attendance,inferred:!previousReset};
 }
 function currentPeriodTickets(){
-  return uniqueTickets(list(read(TICKET_KEY,[])));
+  const period=activePeriod(archiveData());
+  const within=day=>day&&day>=period.start&&day<=period.end;
+  return uniqueTickets(period.tickets.filter(ticket=>within(ticketPeriodDay(ticket))));
 }
 window.ticketDashboardDataset=currentPeriodTickets;
 window.dispatchEvent(new CustomEvent('ticket-period-data-updated'));
