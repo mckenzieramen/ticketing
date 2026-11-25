@@ -297,6 +297,7 @@ const closeDays=ticket=>{
 const statuses=['Open','Pending','On Hold','Solved','Closed','Merged'];
 const formatDate=new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'Asia/Manila'});
 const pickupTone=rate=>rate===null?'neutral':rate>=90?'good':rate>=75?'warning':'critical';
+function pickupPerformance(avg){if(!Number.isFinite(avg)||avg<0)return null;if(avg<=1)return 100;if(avg<=20)return 100-(avg-1)*(10/19);if(avg<75)return 90-(avg-20)*(90/55);return 0}
 function periodMetrics(period){
   const within=day=>day&&day>=period.start&&day<=period.end;
   const rows=uniqueTickets(period.tickets.filter(ticket=>within(ticketPeriodDay(ticket))&&(!period.currentOnly||!isArchiveable(ticket))));
@@ -310,7 +311,7 @@ function periodMetrics(period){
   const attempts=rows.reduce((total,ticket)=>total+Math.max(0,attemptCount(ticket)-(Number(ticket.carriedAttemptBaseline)||0)),0);
   const closingTimes=rows.map(closeDays).filter(value=>value!==null);
   const averageClose=mean(closingTimes,2);
-  const rate=pickups.length?Math.max(0,Math.min(100,100-Number(averagePickup)/2)):null;
+  const rate=pickupPerformance(Number(averagePickup));
   return {rows,days,carried,inboundCount:inbound.length,pickups,passed,averagePickup,attempts,closingTimes,averageClose,rate};
 }
 function renderResetPreview(period,archived,carried){
@@ -365,7 +366,7 @@ function renderSummary(){
   const tone=good=>good==null?'neutral':good?'good':'critical';
   const metrics=[
     ['Total tickets',rows.length,`${rows.filter(ticket=>callType(ticket,'Inbound')).length} inbound · ${rows.filter(ticket=>callType(ticket,'Outbound')).length} outbound · ${carried} carried forward`],
-    ['Pickup performance',rate===null?'—':`${rate.toFixed(2)}%`,pickups.length?`100% − (${mean(pickups,2)} sec ÷ 2) · 20 sec = 90% goal`:'No valid inbound pickup times · 20 sec = 90% goal',pickupTone(rate)],
+    ['Pickup performance',rate===null?'—':`${rate.toFixed(2)}%`,pickups.length?`${mean(pickups,2)} sec average · 1 sec = 100%, 20 sec = 90%, 75 sec = 0%`:'No valid inbound pickup times · 20 sec = 90% goal',pickupTone(rate)],
     ['Avg. pickup',pickups.length?`${mean(pickups)} sec`:'—','20 sec target',tone(pickups.length?pickups.reduce((sum,seconds)=>sum+seconds,0)/pickups.length<=20:null)],
     ['Call attempts',attempts,'Recorded on tickets in this period'],
     ['Attendance',`${days} ${days===1?'day':'days'}`,'Unique days marked present'],
