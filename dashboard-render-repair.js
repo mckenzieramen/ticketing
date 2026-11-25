@@ -4,7 +4,7 @@ const KEY='premiumTicketTracker.v1',STATUSES=['Open','Pending','On Hold','Solved
 const COLORS={Open:'#39a7e8',Pending:'#f7b916','On Hold':'#ef4c4c',Solved:'#16b86c',Closed:'#728296',Merged:'#7c3aed'};
 function parse(raw){try{const v=typeof raw==='string'?JSON.parse(raw):raw;return Array.isArray(v)?v:[]}catch{return[]}}
 function readRaw(){let v=[];try{v=parse(window.FirebaseOnlyMemory?.get?.(KEY))}catch{}if(v.length)return v;try{v=parse(localStorage.getItem(KEY)||'[]')}catch{}return v}
-function read(){const current=window.ticketDashboardDataset?.();return Array.isArray(current)?current:readRaw()}
+function read(){const current=window.ticketDashboardDataset?.();const source=Array.isArray(current)?current:readRaw();return source.filter(t=>['open','pending','on hold'].includes(String(t?.status||'').trim().toLowerCase()))}
 function syncAppState(){const next=readRaw();try{if(typeof tickets!=='undefined'&&Array.isArray(next)){tickets=next;if(typeof normalizeLegacy==='function')normalizeLegacy()}}catch(e){console.warn('App ticket state refresh skipped',e)}return next}
 function installTableGuard(){if(document.getElementById('finalAllTicketsGuard'))return;const s=document.createElement('style');s.id='finalAllTicketsGuard';s.textContent=`html[data-tracker-view="tickets"] #ticketTableBody>tr:not([data-ticket-id]){display:none!important}html[data-tracker-view="tickets"] #ticketTableBody{overflow-anchor:none!important}html[data-tracker-view="tickets"] .records-panel .table-scroll{overflow-anchor:none!important}`;document.head.appendChild(s)}
 function render(){const tickets=read(),stats=document.getElementById('statsGrid'),bars=document.getElementById('statusBars');
