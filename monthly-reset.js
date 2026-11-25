@@ -125,7 +125,7 @@ function activePeriod(archives){
   return {start:previousReset||firstRecordDay(tickets,attendance,end)||end,end,tickets,attendance,inferred:!previousReset};
 }
 function currentPeriodTickets(){
-  return uniqueTickets(list(read(TICKET_KEY,[])).filter(ticket=>!isArchiveable(ticket)));
+  return uniqueTickets(list(read(TICKET_KEY,[])));
 }
 window.ticketDashboardDataset=currentPeriodTickets;
 window.dispatchEvent(new CustomEvent('ticket-period-data-updated'));
@@ -417,11 +417,11 @@ function applyCurrentPeriodTableFilter(){
   const rows=[...body.querySelectorAll('tr[data-ticket-id]')];
   const period=activePeriod(archiveData());
   const within=day=>day&&day>=period.start&&day<=period.end;
-  const currentIds=new Set(uniqueTickets(period.tickets.filter(ticket=>within(ticketPeriodDay(ticket))&&!isArchiveable(ticket))).map(ticket=>String(ticket.id)));
+  const currentIds=new Set(uniqueTickets(period.tickets.filter(ticket=>within(ticketPeriodDay(ticket)))).map(ticket=>String(ticket.id)));
   rows.forEach(row=>row.hidden=!currentIds.has(String(row.dataset.ticketId)));
   const visible=rows.some(row=>!row.hidden);
   if(empty){
-    if(!visible){empty.textContent='No Open, Pending, or On Hold tickets in the current period.';empty.style.display='block'}
+    if(!visible){empty.textContent='No tickets in the current period.';empty.style.display='block'}
     else empty.style.display='none';
   }
 }
