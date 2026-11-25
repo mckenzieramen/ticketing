@@ -124,6 +124,12 @@ function activePeriod(archives){
   const previousReset=savedStart&&savedStart<=end?savedStart:Object.values(archives).map(archive=>resetDay(archive?.archivedAt)).filter(day=>day&&day<=end).sort().at(-1);
   return {start:previousReset||firstRecordDay(tickets,attendance,end)||end,end,tickets,attendance,inferred:!previousReset};
 }
+function currentPeriodTickets(){
+  const period=activePeriod(archiveData()),within=day=>day&&day>=period.start&&day<=period.end;
+  return uniqueTickets(period.tickets.filter(ticket=>within(ticketPeriodDay(ticket))&&!isArchiveable(ticket)));
+}
+window.ticketDashboardDataset=currentPeriodTickets;
+window.dispatchEvent(new CustomEvent('ticket-period-data-updated'));
 function archivedPeriod(archive){
   const tickets=list(archive.tickets);
   const attendance=attendanceDays(archive.attendance);
