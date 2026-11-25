@@ -1,6 +1,6 @@
 (()=>{'use strict';
 const $=id=>document.getElementById(id),KEY='premiumTicketTracker.v1',TARGET=20,PICKUP_RATE_TARGET=90,FAST_CLOSE_DAYS=1.5;
-const records=()=>{const current=window.ticketDashboardDataset?.();let source=current;if(!Array.isArray(source)){try{const raw=localStorage.getItem(KEY)??window.FirebaseOnlyMemory?.get?.(KEY)??'[]',v=JSON.parse(raw);source=Array.isArray(v)?v:[]}catch{source=[]}}return source.filter(x=>['open','pending','on hold'].includes(String(x?.status||'').trim().toLowerCase()))};
+const records=()=>{try{const raw=localStorage.getItem(KEY)??window.FirebaseOnlyMemory?.get?.(KEY);if(raw!==null&&raw!==undefined){const value=typeof raw==='string'?JSON.parse(raw):raw;if(Array.isArray(value))return value}}catch{}const current=window.ticketDashboardDataset?.();return Array.isArray(current)?current:[]};
 const parse=v=>{if(!v)return null;const m=String(v).match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/);return m?new Date(+m[1],+m[2]-1,+m[3],+m[4],+m[5],+m[6]):null};
 const GOOD='#087a43',WARN='#c77a00',BAD='#c52b27';
 function pickupPerformance(avg){if(!Number.isFinite(avg)||avg<0)return null;if(avg<=1)return 100;return Math.max(0,Math.min(100,100-avg/2))}
