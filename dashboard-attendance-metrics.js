@@ -45,7 +45,7 @@ function ensurePastAttendance(){
  });
 }
 
-function attemptCount(t){if(Array.isArray(t?.callAttemptHistory)&&t.callAttemptHistory.length)return t.callAttemptHistory.length;const n=Number(t?.callAttempts);return Number.isFinite(n)&&n>0?n:0}
+function attemptCount(t){const n=Number(t?.callAttempts)||0;return Math.max(1,Array.isArray(t?.callAttemptHistory)?t.callAttemptHistory.length:0,Number.isFinite(n)?n:0)}
 function activeView(){return document.documentElement.dataset.trackerView||document.querySelector('main.container>.premium-tabs button.active[data-view]')?.dataset.view||'dashboard'}
 function bindMainAttendanceButton(){const btn=document.getElementById('attendanceBtn');if(!btn||btn.dataset.attendanceFixed==='1')return;btn.dataset.attendanceFixed='1';btn.addEventListener('click',e=>{e.preventDefault();markPresent()})}
 function ensureAttendanceAction(){const nav=document.querySelector('main.container>.premium-tabs');if(!nav)return null;let wrap=document.getElementById('dashboardAttendanceAction');if(wrap)return wrap;wrap=document.createElement('div');wrap.id='dashboardAttendanceAction';wrap.className='dashboard-attendance-nav-action';wrap.innerHTML='<div class="dashboard-attendance-info"><span>Attendance Today</span><strong id="dashboardAttendanceTotal">0 days</strong></div><button id="dashboardAttendanceBtn" type="button">✓ Mark as Present</button>';nav.appendChild(wrap);document.getElementById('dashboardAttendanceBtn')?.addEventListener('click',e=>{e.preventDefault();markPresent()});return wrap}

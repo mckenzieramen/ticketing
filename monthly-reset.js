@@ -290,7 +290,7 @@ const callType=(ticket,type)=>[type,type+' Call'].includes(ticket.callType);
 const mean=(values,digits=1)=>values.length?(values.reduce((total,value)=>total+value,0)/values.length).toFixed(digits):null;
 const validPickups=records=>records.filter(ticket=>callType(ticket,'Inbound')&&ticket.pickupSeconds!=null&&String(ticket.pickupSeconds).trim()!=='')
   .map(ticket=>Number(ticket.pickupSeconds)).filter(seconds=>Number.isFinite(seconds)&&seconds>=0);
-const attemptCount=ticket=>Array.isArray(ticket.callAttemptHistory)&&ticket.callAttemptHistory.length?ticket.callAttemptHistory.length:Math.max(0,Number(ticket.callAttempts)||0);
+const attemptCount=ticket=>Math.max(1,Array.isArray(ticket.callAttemptHistory)?ticket.callAttemptHistory.length:0,Number(ticket.callAttempts)||0);
 const closeDays=ticket=>{
   const start=Date.parse(String(ticket.creation||'').replace(' ','T'));
   const end=Date.parse(String(ticket.closedTime||'').replace(' ','T'));
