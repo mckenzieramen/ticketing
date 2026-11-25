@@ -121,7 +121,7 @@ confirmReset.addEventListener('click',()=>{
 window.addEventListener('ticket-cloud-save',event=>{
   if(!pendingReset||event.detail?.archivedAt!==pendingReset.archivedAt)return;
   if(event.detail.phase==='saved'){
-    try{sessionStorage.setItem('ticketing.summaryPeriodAfterReset',pendingReset.archiveKey)}catch{}
+    try{sessionStorage.removeItem('ticketing.summaryPeriodAfterReset')}catch{}
     location.reload();
     return;
   }
@@ -176,7 +176,8 @@ style.textContent+=`
 const select=summary.querySelector('select');
 let resetPeriod='';
 try{
-  resetPeriod=sessionStorage.getItem('ticketing.summaryPeriodAfterReset')||'';
+  // Always reopen on the new active cutoff after a reset; historical periods remain selectable.
+  sessionStorage.removeItem('ticketing.summaryPeriodAfterReset');
   sessionStorage.removeItem('ticketing.summaryMonthAfterReset');
 }catch{}
 const grid=summary.querySelector('.records-month-grid');
