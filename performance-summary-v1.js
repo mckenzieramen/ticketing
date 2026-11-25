@@ -3,7 +3,7 @@ const $=id=>document.getElementById(id),KEY='premiumTicketTracker.v1',TARGET=20,
 const records=()=>{const current=window.ticketDashboardDataset?.();let source=current;if(!Array.isArray(source)){try{const raw=localStorage.getItem(KEY)??window.FirebaseOnlyMemory?.get?.(KEY)??'[]',v=JSON.parse(raw);source=Array.isArray(v)?v:[]}catch{source=[]}}return source.filter(x=>['open','pending','on hold'].includes(String(x?.status||'').trim().toLowerCase()))};
 const parse=v=>{if(!v)return null;const m=String(v).match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/);return m?new Date(+m[1],+m[2]-1,+m[3],+m[4],+m[5],+m[6]):null};
 const GOOD='#087a43',WARN='#c77a00',BAD='#c52b27';
-function pickupPerformance(avg){if(!Number.isFinite(avg)||avg<0)return null;if(avg<=1)return 100;if(avg<=20)return 100-(avg-1)*(10/19);if(avg<75)return 90-(avg-20)*(90/55);return 0}
+function pickupPerformance(avg){if(!Number.isFinite(avg)||avg<0)return null;if(avg<=1)return 100;return Math.max(0,Math.min(100,100-avg/2))}
 const paint=(id,c)=>{const e=$(id);if(e)e.style.setProperty('color',c||'','important')};
 function closingDuration(t){const a=parse(t.creation),b=parse(t.closedTime||t.actualClosedTime);return a&&b&&b>=a?(b-a)/86400000:null}
 function closingScore(days){if(days==null)return null;if(days<=1.5)return 100;if(days>=3)return 75;return 100-((days-1.5)/1.5)*25}
@@ -15,7 +15,7 @@ function update(){const t=records(),signature=JSON.stringify(t);if(signature===l
 set('avgPickup',avgPickup==null?'—':`${avgPickup.toFixed(2)} sec`);
 set('avgPickupSub',pickups.length?`Total ${sumPickup.toLocaleString('en-US',{maximumFractionDigits:2})} sec ÷ ${pickups.length} inbound calls with pickup times`:'No valid inbound pickup times');
 set('pickupRate',rate==null?'—':`${rate.toFixed(2)}%`);
-set('pickupRateSub',rate==null?'No valid inbound pickup times':`${avgPickup.toFixed(2)}s average · 1s=100%, 20s=90%, 75s=0%`);
+set('pickupRateSub',rate==null?'No valid inbound pickup times':`${avgPickup.toFixed(2)}s average · 1 sec=100%, 20 sec=90% · 75% is passing`);
 paint('avgPickup',avgPickup==null?'':avgPickup<=20?GOOD:avgPickup<=targetAverage?WARN:BAD);
 paint('pickupRate',rate==null?'':rate>=90?GOOD:rate>=75?WARN:BAD);
 const pr=$('pickupRecovery'),ps=$('pickupRecoverySub');
