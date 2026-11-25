@@ -356,19 +356,14 @@ function applyCurrentPeriodTableFilter(){
   const body=document.getElementById('ticketTableBody'),empty=document.getElementById('emptyState');
   if(!body)return;
   const rows=[...body.querySelectorAll('tr[data-ticket-id]')];
-  if(select.value!=='active'){
-    rows.forEach(row=>row.hidden=false);
-    if(empty){empty.textContent='No tickets recorded yet.';empty.style.display=rows.length?'none':'block'}
-    return;
-  }
   const period=activePeriod(archiveData());
   const within=day=>day&&day>=period.start&&day<=period.end;
   const currentIds=new Set(uniqueTickets(period.tickets.filter(ticket=>within(ticketPeriodDay(ticket))&&!isArchiveable(ticket))).map(ticket=>String(ticket.id)));
   rows.forEach(row=>row.hidden=!currentIds.has(String(row.dataset.ticketId)));
   const visible=rows.some(row=>!row.hidden);
   if(empty){
-    if(rows.length&&!visible){empty.textContent='No tickets in the current period.';empty.style.display='block'}
-    else if(visible)empty.style.display='none';
+    if(!visible){empty.textContent='No Open, Pending, or On Hold tickets in the current period.';empty.style.display='block'}
+    else empty.style.display='none';
   }
 }
 function scheduleCurrentPeriodTableFilter(){requestAnimationFrame(applyCurrentPeriodTableFilter)}
