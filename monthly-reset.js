@@ -310,7 +310,7 @@ function periodMetrics(period){
   const attempts=rows.reduce((total,ticket)=>total+Math.max(0,attemptCount(ticket)-(Number(ticket.carriedAttemptBaseline)||0)),0);
   const closingTimes=rows.map(closeDays).filter(value=>value!==null);
   const averageClose=mean(closingTimes,2);
-  const rate=inbound.length?passed/inbound.length*100:null;
+  const rate=pickups.length?Math.max(0,Math.min(100,100-Number(averagePickup)/2)):null;
   return {rows,days,carried,inboundCount:inbound.length,pickups,passed,averagePickup,attempts,closingTimes,averageClose,rate};
 }
 function renderResetPreview(period,archived,carried){
@@ -365,7 +365,7 @@ function renderSummary(){
   const tone=good=>good==null?'neutral':good?'good':'critical';
   const metrics=[
     ['Total tickets',rows.length,`${rows.filter(ticket=>callType(ticket,'Inbound')).length} inbound · ${rows.filter(ticket=>callType(ticket,'Outbound')).length} outbound · ${carried} carried forward`],
-    ['Pickup rate',rate===null?'—':`${rate.toFixed(2)}%`,inboundCount?`${passed}/${inboundCount} inbound calls answered within 20 sec · 90% goal`:'No inbound calls in this period · 90% goal',pickupTone(rate)],
+    ['Pickup performance',rate===null?'—':`${rate.toFixed(2)}%`,pickups.length?`100% − (${mean(pickups,2)} sec ÷ 2) · 20 sec = 90% goal`:'No valid inbound pickup times · 20 sec = 90% goal',pickupTone(rate)],
     ['Avg. pickup',pickups.length?`${mean(pickups)} sec`:'—','20 sec target',tone(pickups.length?pickups.reduce((sum,seconds)=>sum+seconds,0)/pickups.length<=20:null)],
     ['Call attempts',attempts,'Recorded on tickets in this period'],
     ['Attendance',`${days} ${days===1?'day':'days'}`,'Unique days marked present'],
