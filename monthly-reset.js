@@ -355,7 +355,7 @@ function renderSummary(){
   }
   select.value=selected;
   const period=periods.get(selected);
-  const {rows,days,carried,inboundCount,pickups,passed,attempts,closingTimes,averageClose,rate}=periodMetrics({...period,currentOnly:selected==='active'});
+  const {rows,days,carried,inboundCount,pickups,passed,averagePickup,attempts,closingTimes,averageClose,rate}=periodMetrics({...period,currentOnly:selected==='active'});
   const previous=[...periods.values()][[...periods.keys()].indexOf(selected)+1];
   const previousMetrics=previous?periodMetrics(previous):null;
   const comparison=summary.querySelector('.records-period-comparison');
