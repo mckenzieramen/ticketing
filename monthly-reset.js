@@ -303,7 +303,7 @@ function periodMetrics(period){
   const rows=uniqueTickets(period.tickets.filter(ticket=>within(ticketPeriodDay(ticket))));
   const days=new Set(period.attendance.filter(within)).size;
   const carried=rows.filter(ticket=>ticket.carriedIntoPeriod).length;
-  const metricRows=rows.filter(ticket=>!ticket.carriedIntoPeriod);
+  const metricRows=rows;
   const inbound=metricRows.filter(ticket=>callType(ticket,'Inbound'));
   const pickups=validPickups(inbound);
   const averagePickup=pickups.length&&inbound.length?Number((pickups.reduce((total,seconds)=>total+seconds,0)/inbound.length).toFixed(2)):null;
