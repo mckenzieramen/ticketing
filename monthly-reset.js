@@ -244,7 +244,7 @@ const formatDate=new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric',ye
 const pickupTone=rate=>rate===null?'neutral':rate>=90?'good':rate>=75?'warning':'critical';
 function periodMetrics(period){
   const within=day=>day&&day>=period.start&&day<=period.end;
-  const rows=uniqueTickets(period.tickets.filter(ticket=>within(ticketPeriodDay(ticket))));
+  const rows=uniqueTickets(period.tickets.filter(ticket=>within(ticketPeriodDay(ticket))&&(!period.currentOnly||!isArchiveable(ticket))));
   const days=new Set(period.attendance.filter(within)).size;
   const carried=rows.filter(ticket=>ticket.carriedIntoPeriod).length;
   const pickups=validPickups(rows.filter(ticket=>!ticket.carriedIntoPeriod));
@@ -296,7 +296,7 @@ function renderSummary(){
   }
   select.value=selected;
   const period=periods.get(selected);
-  const {rows,days,carried,pickups,passed,attempts,closingTimes,averageClose,rate}=periodMetrics(period);
+  const {rows,days,carried,pickups,passed,attempts,closingTimes,averageClose,rate}=periodMetrics({...period,currentOnly:selected==='active'});
   const previous=[...periods.values()][[...periods.keys()].indexOf(selected)+1];
   const previousMetrics=previous?periodMetrics(previous):null;
   const comparison=summary.querySelector('.records-period-comparison');
@@ -363,7 +363,7 @@ function applyCurrentPeriodTableFilter(){
   }
   const period=activePeriod(archiveData());
   const within=day=>day&&day>=period.start&&day<=period.end;
-  const currentIds=new Set(uniqueTickets(period.tickets.filter(ticket=>within(ticketPeriodDay(ticket)))).map(ticket=>String(ticket.id)));
+  const currentIds=new Set(uniqueTickets(period.tickets.filter(ticket=>within(ticketPeriodDay(ticket))&&!isArchiveable(ticket))).map(ticket=>String(ticket.id)));
   rows.forEach(row=>row.hidden=!currentIds.has(String(row.dataset.ticketId)));
   const visible=rows.some(row=>!row.hidden);
   if(empty){
