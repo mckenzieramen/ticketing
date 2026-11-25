@@ -116,6 +116,7 @@ confirmReset.addEventListener('click',()=>{
   localStorage.setItem(ATTENDANCE_KEY,'[]');
   localStorage.setItem(PERIOD_START_KEY,period.end);
   localStorage.setItem(MONTH_KEY,period.end.slice(0,7));
+  void window.FirebaseTicketPersistence.retrySave();
 });
 window.addEventListener('ticket-cloud-save',event=>{
   if(!pendingReset||event.detail?.archivedAt!==pendingReset.archivedAt)return;
