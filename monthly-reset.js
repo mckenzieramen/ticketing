@@ -302,14 +302,16 @@ function periodMetrics(period){
   const rows=uniqueTickets(period.tickets.filter(ticket=>within(ticketPeriodDay(ticket))&&(!period.currentOnly||!isArchiveable(ticket))));
   const days=new Set(period.attendance.filter(within)).size;
   const carried=rows.filter(ticket=>ticket.carriedIntoPeriod).length;
-  const pickups=validPickups(rows.filter(ticket=>!ticket.carriedIntoPeriod));
+  const metricRows=rows.filter(ticket=>!ticket.carriedIntoPeriod);
+  const inbound=metricRows.filter(ticket=>callType(ticket,'Inbound'));
+  const pickups=validPickups(inbound);
   const averagePickup=mean(pickups,2);
   const passed=pickups.filter(seconds=>seconds<=20).length;
   const attempts=rows.reduce((total,ticket)=>total+Math.max(0,attemptCount(ticket)-(Number(ticket.carriedAttemptBaseline)||0)),0);
   const closingTimes=rows.map(closeDays).filter(value=>value!==null);
   const averageClose=mean(closingTimes,2);
-  const rate=pickups.length?Math.max(0,Math.min(100,100-Number(averagePickup)/2)):null;
-  return {rows,days,carried,pickups,passed,averagePickup,attempts,closingTimes,averageClose,rate};
+  const rate=inbound.length?passed/inbound.length*100:null;
+  return {rows,days,carried,inboundCount:inbound.length,pickups,passed,averagePickup,attempts,closingTimes,averageClose,rate};
 }
 function renderResetPreview(period,archived,carried){
   const {rows,rate,attempts,days,averageClose}=periodMetrics({...period,tickets:archived});
@@ -352,7 +354,7 @@ function renderSummary(){
   }
   select.value=selected;
   const period=periods.get(selected);
-  const {rows,days,carried,pickups,passed,attempts,closingTimes,averageClose,rate}=periodMetrics({...period,currentOnly:selected==='active'});
+  const {rows,days,carried,inboundCount,pickups,passed,attempts,closingTimes,averageClose,rate}=periodMetrics({...period,currentOnly:selected==='active'});
   const previous=[...periods.values()][[...periods.keys()].indexOf(selected)+1];
   const previousMetrics=previous?periodMetrics(previous):null;
   const comparison=summary.querySelector('.records-period-comparison');
@@ -363,7 +365,7 @@ function renderSummary(){
   const tone=good=>good==null?'neutral':good?'good':'critical';
   const metrics=[
     ['Total tickets',rows.length,`${rows.filter(ticket=>callType(ticket,'Inbound')).length} inbound · ${rows.filter(ticket=>callType(ticket,'Outbound')).length} outbound · ${carried} carried forward`],
-    ['Pickup rate',rate===null?'—':`${rate.toFixed(2)}%`,pickups.length?`Avg. pickup ${mean(pickups,2)} sec · 20 sec = 90% goal`:'No valid inbound pickups · 20 sec = 90% goal',pickupTone(rate)],
+    ['Pickup rate',rate===null?'—':`${rate.toFixed(2)}%`,inboundCount?`${passed}/${inboundCount} inbound calls answered within 20 sec · 90% goal`:'No inbound calls in this period · 90% goal',pickupTone(rate)],
     ['Avg. pickup',pickups.length?`${mean(pickups)} sec`:'—','20 sec target',tone(pickups.length?pickups.reduce((sum,seconds)=>sum+seconds,0)/pickups.length<=20:null)],
     ['Call attempts',attempts,'Recorded on tickets in this period'],
     ['Attendance',`${days} ${days===1?'day':'days'}`,'Unique days marked present'],
