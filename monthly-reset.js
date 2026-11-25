@@ -352,7 +352,29 @@ function scheduleSummary(){
   if(frame)return;
   frame=requestAnimationFrame(()=>{frame=0;renderSummary()});
 }
-select.addEventListener('change',()=>{resetPeriod='';renderSummary()});
+function applyCurrentPeriodTableFilter(){
+  const body=document.getElementById('ticketTableBody'),empty=document.getElementById('emptyState');
+  if(!body)return;
+  const rows=[...body.querySelectorAll('tr[data-ticket-id]')];
+  if(select.value!=='active'){
+    rows.forEach(row=>row.hidden=false);
+    return;
+  }
+  const period=activePeriod(archiveData());
+  const within=day=>day&&day>=period.start&&day<=period.end;
+  const currentIds=new Set(uniqueTickets(period.tickets.filter(ticket=>within(ticketPeriodDay(ticket)))).map(ticket=>String(ticket.id)));
+  rows.forEach(row=>row.hidden=!currentIds.has(String(row.dataset.ticketId)));
+  const visible=rows.some(row=>!row.hidden);
+  if(empty){
+    if(rows.length&&!visible){empty.textContent='No tickets in the current period.';empty.style.display='block'}
+    else if(visible)empty.style.display='none';
+  }
+}
+function scheduleCurrentPeriodTableFilter(){requestAnimationFrame(applyCurrentPeriodTableFilter)}
+select.addEventListener('change',()=>{resetPeriod='';renderSummary();scheduleCurrentPeriodTableFilter()});
 for(const name of ['firebase-memory-write','ticket-live-sync','ticket-data-updated','call-attempt-updated','attendance-updated','tracker-view-changed'])window.addEventListener(name,scheduleSummary);
-renderSummary();
+window.addEventListener('ticket-records-rendered',scheduleCurrentPeriodTableFilter);
+window.addEventListener('ticket-record-saved',scheduleCurrentPeriodTableFilter);
+window.addEventListener('ticket-live-sync',scheduleCurrentPeriodTableFilter);
+renderSummary();scheduleCurrentPeriodTableFilter();
 })();
