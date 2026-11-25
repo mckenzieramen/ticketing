@@ -358,6 +358,7 @@ function applyCurrentPeriodTableFilter(){
   const rows=[...body.querySelectorAll('tr[data-ticket-id]')];
   if(select.value!=='active'){
     rows.forEach(row=>row.hidden=false);
+    if(empty){empty.textContent='No tickets recorded yet.';empty.style.display=rows.length?'none':'block'}
     return;
   }
   const period=activePeriod(archiveData());
